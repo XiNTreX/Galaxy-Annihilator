@@ -8,7 +8,7 @@ function iDraw() is called again and again by the system.
 void iDraw()
 {
     // place your drawing codes here
-    iClear();
+    //iClear();
     iSetColor(255,255,255) ;
     iFilledCircle(10,20,1);
     iFilledCircle(50,20,1);
