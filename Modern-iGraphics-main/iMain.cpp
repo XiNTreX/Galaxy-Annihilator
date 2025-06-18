@@ -2,6 +2,7 @@
 #include "iSound.h"
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
+int bgSoundIdx = -1;
 /*
 function iDraw() is called again and again by the system.
 */
@@ -353,7 +354,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     iInitializeSound();
-    iPlaySound("assets/sounds/menu bgm.mp3",true);
+   bgSoundIdx =  iPlaySound("assets/sounds/menubg.mp3",true);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
