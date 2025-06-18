@@ -6,7 +6,7 @@ using namespace std;
 int bgSoundIdx = -1;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
-int gamestate = 1;s
+int gamestate = 1;
 /*
 function iDraw() is called again and again by the system.
 */
