@@ -14,7 +14,7 @@ void iDraw()
 {
     // place your drawing codes here
     iClear();
-    //homepage();
+    homepage();
     /*iSetColor(255,255,255) ;
     iFilledCircle(10,20,1);
     iFilledCircle(50,20,1);
