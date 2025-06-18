@@ -6,6 +6,7 @@ using namespace std;
 int bgSoundIdx = -1;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
+int gamestate = 1;s
 /*
 function iDraw() is called again and again by the system.
 */
@@ -18,7 +19,12 @@ void iDraw()
 {
     // place your drawing codes here
     iClear();
-    homepage();
+    switch (gamestate)
+    {
+        case 1:
+        homepage();
+        break;
+    }
     /*iSetColor(255,255,255) ;
     iFilledCircle(10,20,1);
     iFilledCircle(50,20,1);
