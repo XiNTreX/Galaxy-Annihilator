@@ -1,5 +1,9 @@
 #include "iGraphics.h"
+#include <iostream>
 #include "iSound.h"
+using namespace std;
+
+int bgSoundIdx = -1;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
 /*
@@ -353,7 +357,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     iInitializeSound();
-    iPlaySound("assets/sounds/menu bgm.mp3",true);
+    iPlaySound("assets/sounds/menubg.wav",true);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
