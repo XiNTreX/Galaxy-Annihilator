@@ -5,11 +5,17 @@
 /*
 function iDraw() is called again and again by the system.
 */
+
+void homepage()
+{
+    iShowImage(0,0, "assets/images/homepage.png");
+}
 void iDraw()
 {
     // place your drawing codes here
-    //iClear();
-    iSetColor(255,255,255) ;
+    iClear();
+    homepage();
+    /*iSetColor(255,255,255) ;
     iFilledCircle(10,20,1);
     iFilledCircle(50,20,1);
     iFilledCircle(15,30,1);
@@ -244,7 +250,7 @@ void iDraw()
     iFilledCircle(960,690,1);
     iFilledCircle(950,650,1);
     iFilledCircle(970,680,1);
-     iFilledCircle(800,590,1);
+    iFilledCircle(800,590,1);
     iFilledCircle(810,290,1);
     iFilledCircle(815,529,1);
     iFilledCircle(855,545,1);
@@ -257,7 +263,7 @@ void iDraw()
     iFilledCircle(845,690,1);
     iFilledCircle(860,690,1);
     iFilledCircle(850,650,1);
-    iFilledCircle(870,680,1);
+    iFilledCircle(870,680,1);*/
 
 }
 /*
