@@ -13,7 +13,7 @@ function iDraw() is called again and again by the system.
 
 void homepage()
 {
-    iShowImage(0,0, "assets/images/homepage.png");
+    iShowImage(0,0, "assets/images/homepage_w_menu.png");
 }
 void iDraw()
 {
