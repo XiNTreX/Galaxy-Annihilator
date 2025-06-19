@@ -4,6 +4,7 @@
 using namespace std;
 
 int bgSoundIdx = -1;
+int mbgSoundIdx = -1;
 int s_on_off = 0;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
@@ -17,17 +18,23 @@ void homepage()
 {
     iShowImage(0, 0, "assets/images/homepage_w_menu.png");
     
+   
+    
     
 }
 void difficulty()
 {
     iShowImage(0, 0, "assets/images/difficulty.png");
+    iPauseSound(mbgSoundIdx);
+    iResumeSound(bgSoundIdx);
+    
 }
 void mainpage1()
 {
     iShowImage(0, 0, "assets/images/mainbg.png");
-    iStopAllSounds();
-    bgSoundIdx= iPlaySound("assets/sounds/mainbg.wav", true);
+    iPauseSound(bgSoundIdx);
+    mbgSoundIdx = iPlaySound("assets/sounds/mainbg.wav", true, 20);
+    iFreeSound();
 }
 void iDraw()
 {
@@ -166,7 +173,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     iInitializeSound();
-    bgSoundIdx= iPlaySound("assets/sounds/menubg.wav", true);
+    bgSoundIdx = iPlaySound("assets/sounds/menubg.wav", true);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
