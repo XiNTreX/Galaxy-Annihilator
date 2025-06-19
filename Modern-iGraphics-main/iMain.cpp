@@ -63,9 +63,9 @@ void mainpage1()
     iShowImage(0, 0, "assets/images/mainbg.png");
     iPauseSound(bgSoundIdx);
     mbgSoundIdx = iPlaySound("assets/sounds/mainbg.wav", true, 20);
-    iFreeSound();
-     iShowImage(0, 0, "assets/images/mainbg.png");
-     iShowImage(space_x, space_y, space_image );
+    
+    iShowImage(0, 0, "assets/images/mainbg.png");
+    iShowImage(space_x, space_y, space_image );
 }
 
 void update_space(){
@@ -139,7 +139,7 @@ void iMouse(int button, int state, int mx, int my)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
     {
-        cout << mx << " " << my << endl;
+        
         switch (gamestate)
         {
         case 1:
@@ -252,11 +252,11 @@ int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
     // place your own initialization codes here.
-     populate_space_images();
+    populate_space_images();
     iInitializeSound();
     bgSoundIdx = iPlaySound("assets/sounds/menubg.wav", true);
-    iPlaySound("assets/sounds/menubg.wav", true);
-     iSetTimer(100, update_space);
+    
+    iSetTimer(100, update_space);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
