@@ -14,13 +14,15 @@ function iDraw() is called again and again by the system.
 
 void homepage()
 {
-    iShowImage(0,0, "assets/images/homepage_w_menu.png");
+    iShowImage(0, 0, "assets/images/homepage_w_menu.png");
 }
-void difficulty(){
-    iShowImage(0,0, "assets/images/difficulty.png");
+void difficulty()
+{
+    iShowImage(0, 0, "assets/images/difficulty.png");
 }
-void mainpage1(){
-    iShowImage(0,0, "assets/images/mainbg.png");
+void mainpage1()
+{
+    iShowImage(0, 0, "assets/images/mainbg.png");
 }
 void iDraw()
 {
@@ -28,18 +30,16 @@ void iDraw()
     iClear();
     switch (gamestate)
     {
-        case 1:
+    case 1:
         homepage();
         break;
-        case 2:
+    case 2:
         difficulty();
         break;
-        case 21:
+    case 21:
         mainpage1();
         break;
     }
-   
-
 }
 /*
 function iMouseMove() is called when the user moves the mouse.
@@ -48,8 +48,6 @@ function iMouseMove() is called when the user moves the mouse.
 void iMouseMove(int mx, int my)
 {
     // place your codes here
-    
-    
 }
 
 /*
@@ -70,27 +68,26 @@ void iMouse(int button, int state, int mx, int my)
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         switch (gamestate)
-    {
+        {
         case 1:
-        if((400<=mx && mx<=800)&&(370<=my && my<=430)){
-        gamestate=2;
-        }else if((400<=mx && mx<=800)&&(290<=my && my<=350)){
-        gamestate=3;
-        }else if((400<=mx && mx<=800)&&(210<=my && my<=270)){
-        gamestate=4;
-        }else if((400<=mx && mx<=800)&&(130<=my && my<=190)){
-        gamestate=5;
-        }
-        break;
+            if ((400 <= mx && mx <= 800) && (370 <= my && my <= 430)) gamestate = 2;
+            
+            else if ((400 <= mx && mx <= 800) && (290 <= my && my <= 350)) gamestate = 3;
+      
+            else if ((400 <= mx && mx <= 800) && (210 <= my && my <= 270)) gamestate = 4;
+            
+            else if ((400 <= mx && mx <= 800) && (130 <= my && my <= 190)) gamestate = 5;
+            
+            break;
         case 2:
-        if((400<=mx && mx<=800)&&(370<=my && my<=430)){
-        gamestate=21;
-        }else if((400<=mx && mx<=800)&&(290<=my && my<=350)){
-        gamestate=22;
-        }else if((400<=mx && mx<=800)&&(210<=my && my<=270)){
-        gamestate=23;}
-        break;
-    }
+            if ((400 <= mx && mx <= 800) && (370 <= my && my <= 430)) gamestate = 21;
+            
+            else if ((400 <= mx && mx <= 800) && (290 <= my && my <= 350)) gamestate = 22;
+            
+            else if ((400 <= mx && mx <= 800) && (210 <= my && my <= 270)) gamestate = 23;
+            
+            break;
+        }
     }
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
@@ -151,7 +148,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     iInitializeSound();
-    iPlaySound("assets/sounds/menubg.wav",true);
+    iPlaySound("assets/sounds/menubg.wav", true);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
