@@ -18,7 +18,7 @@ void homepage()
 }
 void difficulty()
 {
-    iShowImage(0, 0, "assets/images/diff1.png");
+    iShowImage(0, 0, "assets/images/difficulty.png");
 }
 void mainpage1()
 {
