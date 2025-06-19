@@ -18,7 +18,7 @@ void homepage()
 }
 void difficulty()
 {
-    iShowImage(0, 0, "assets/images/difficulty.png");
+    iShowImage(0, 0, "assets/images/diff1.png");
 }
 void mainpage1()
 {
@@ -65,26 +65,28 @@ function iMouse() is called when the user presses/releases the mouse.
 */
 void iMouse(int button, int state, int mx, int my)
 {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
     {
+        cout << mx << " " << my << endl;
         switch (gamestate)
         {
         case 1:
-            if ((400 <= mx && mx <= 800) && (370 <= my && my <= 430)) gamestate = 2;
+            if ((430 <= mx && mx <= 780) && (350 <= my && my <= 405)) gamestate = 2;
             
-            else if ((400 <= mx && mx <= 800) && (290 <= my && my <= 350)) gamestate = 3;
+            else if ((430 <= mx && mx <= 780) && (270 <= my && my <= 325)) gamestate = 3;
       
-            else if ((400 <= mx && mx <= 800) && (210 <= my && my <= 270)) gamestate = 4;
+            else if ((430 <= mx && mx <= 780) && (190 <= my && my <= 245)) gamestate = 4;
             
-            else if ((400 <= mx && mx <= 800) && (130 <= my && my <= 190)) gamestate = 5;
+            else if ((430 <= mx && mx <= 780) && (110 <= my && my <= 165)) gamestate = 5;
             
             break;
+        
         case 2:
-            if ((400 <= mx && mx <= 800) && (370 <= my && my <= 430)) gamestate = 21;
+            if ((430 <= mx && mx <= 780) && (325 <= my && my <= 380)) gamestate = 21;
             
-            else if ((400 <= mx && mx <= 800) && (290 <= my && my <= 350)) gamestate = 22;
+            else if ((430 <= mx && mx <= 780) && (225 <= my && my <= 280)) gamestate = 22;
             
-            else if ((400 <= mx && mx <= 800) && (210 <= my && my <= 270)) gamestate = 23;
+            else if ((430 <= mx && mx <= 780) && (120 <= my && my <= 180)) gamestate = 23;
             
             break;
         }
@@ -135,7 +137,8 @@ void iSpecialKeyboard(unsigned char key)
     switch (key)
     {
     case GLUT_KEY_END:
-        if (gamestate == 21 || gamestate == 22 || gamestate == 23) gamestate = 2;
+        if (gamestate == 2 || gamestate == 3 || gamestate == 4 || gamestate == 5) gamestate = 1;
+        else if (gamestate == 21 || gamestate == 22 || gamestate == 23) gamestate = 2;
 
         break;
     // place your codes for other keys here
