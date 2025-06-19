@@ -135,7 +135,8 @@ void iSpecialKeyboard(unsigned char key)
     switch (key)
     {
     case GLUT_KEY_END:
-        // do something
+        if (gamestate == 21 || gamestate == 22 || gamestate == 23) gamestate = 2;
+
         break;
     // place your codes for other keys here
     default:
