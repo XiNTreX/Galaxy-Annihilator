@@ -8,11 +8,40 @@ int mbgSoundIdx = -1;
 int s_on_off = 0;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
-
+char move_idle[6][100];
+char des_idle[21][100];
+char shoot_idle[4][100];
+char idle[1][100];
+enum{IDLE,MOVE,SHOOT,DESTROY};
 int gamestate = 1;
+int state=IDLE;
+int move_idx = 0;
+int des_idx = 0;
+int shoot_idx = 0;
+int space_x=10,space_y=300;
+char *space_image;
 /*
 function iDraw() is called again and again by the system.
 */
+void populate_space_images(){
+     for (int i = 0; i < 21; i++)
+    {
+        sprintf(des_idle[i], "assets/images/sprites/Spaceship/tile%03d.png", i);
+    }
+      for (int i = 0; i < 4; i++)
+    {
+        sprintf(shoot_idle[i], "assets/images/sprites/Spaceship/shoot%03d.png", i);
+    }
+      for (int i = 0; i < 6; i++)
+    {
+        sprintf(move_idle[i], "assets/images/sprites/Spaceship/move%03d.png", i);
+    }
+    for (int i = 0; i < 1; i++)
+    {
+        sprintf(idle[i], "assets/images/sprites/Spaceship/Idle.png", i);
+    }
+    space_image=idle[0];
+}
 
 void homepage()
 {
@@ -35,6 +64,37 @@ void mainpage1()
     iPauseSound(bgSoundIdx);
     mbgSoundIdx = iPlaySound("assets/sounds/mainbg.wav", true, 20);
     iFreeSound();
+     iShowImage(0, 0, "assets/images/mainbg.png");
+     iShowImage(space_x, space_y, space_image );
+}
+
+void update_space(){
+    switch(state){
+        case IDLE:
+        space_image=idle[0];
+        break;
+        case MOVE:
+        space_image=move_idle[move_idx];
+        move_idx=(move_idx+1)%6;
+        if(move_idx==0){
+            state=IDLE;
+        }
+        break;
+        case DESTROY:
+        space_image=des_idle[des_idx];
+        des_idx=(des_idx+1)%21;
+        break;
+        case SHOOT:
+        space_image=shoot_idle[shoot_idx];
+        shoot_idx=(shoot_idx+1)%4;
+        if(shoot_idx==0){
+            state=IDLE;
+        }
+        break;
+    
+    
+    
+    }
 }
 void iDraw()
 {
@@ -79,7 +139,7 @@ void iMouse(int button, int state, int mx, int my)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
     {
-        
+        cout << mx << " " << my << endl;
         switch (gamestate)
         {
         case 1:
@@ -102,10 +162,12 @@ void iMouse(int button, int state, int mx, int my)
             
             break;
         }
+        
     }
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
         // place your codes here
+     
     }
 }
 
@@ -126,19 +188,37 @@ void iKeyboard(unsigned char key)
 {
     switch (key)
     {
-    case 'm':
-        if (s_on_off==0)
-        {
-            iPauseSound(bgSoundIdx);
-            s_on_off++;
+    case 'w':
+        // do something with 'q'
+        space_y+=15;
+        if(space_y>580){
+            space_y=580;
         }
-        else if (s_on_off==1)
-        {
-            iResumeSound(bgSoundIdx);
-            s_on_off--;
-        }
+
         break;
     // place your codes for other keys here
+    case 'a':
+    space_x-=15;
+    if(space_x<0){
+        space_x=0;
+    }
+    state=MOVE;
+    break;
+    case 'd':
+    space_x+=15;
+    if(space_x>1080){
+        space_x=1080;
+    }
+    state=MOVE;
+    break;
+     case 's':
+        // do something with 'q'
+        space_y-=15;
+        if(space_y<0){
+            space_y=0;
+        }
+        break;
+       
     default:
         break;
     }
@@ -172,8 +252,11 @@ int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
     // place your own initialization codes here.
+     populate_space_images();
     iInitializeSound();
     bgSoundIdx = iPlaySound("assets/sounds/menubg.wav", true);
+    iPlaySound("assets/sounds/menubg.wav", true);
+     iSetTimer(100, update_space);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
