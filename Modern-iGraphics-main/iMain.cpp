@@ -4,6 +4,7 @@
 using namespace std;
 
 int bgSoundIdx = -1;
+int s_on_off = 0;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
 
@@ -15,6 +16,8 @@ function iDraw() is called again and again by the system.
 void homepage()
 {
     iShowImage(0, 0, "assets/images/homepage_w_menu.png");
+    
+    
 }
 void difficulty()
 {
@@ -23,6 +26,8 @@ void difficulty()
 void mainpage1()
 {
     iShowImage(0, 0, "assets/images/mainbg.png");
+    iStopAllSounds();
+    bgSoundIdx= iPlaySound("assets/sounds/mainbg.wav", true);
 }
 void iDraw()
 {
@@ -67,7 +72,7 @@ void iMouse(int button, int state, int mx, int my)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
     {
-        cout << mx << " " << my << endl;
+        
         switch (gamestate)
         {
         case 1:
@@ -114,8 +119,17 @@ void iKeyboard(unsigned char key)
 {
     switch (key)
     {
-    case 'q':
-        // do something with 'q'
+    case 'm':
+        if (s_on_off==0)
+        {
+            iPauseSound(bgSoundIdx);
+            s_on_off++;
+        }
+        else if (s_on_off==1)
+        {
+            iResumeSound(bgSoundIdx);
+            s_on_off--;
+        }
         break;
     // place your codes for other keys here
     default:
@@ -152,7 +166,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     iInitializeSound();
-    iPlaySound("assets/sounds/menubg.wav", true);
+    bgSoundIdx= iPlaySound("assets/sounds/menubg.wav", true);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
