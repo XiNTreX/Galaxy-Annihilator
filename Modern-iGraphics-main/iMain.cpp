@@ -62,7 +62,7 @@ void mainpage1()
 {
     iShowImage(0, 0, "assets/images/mainbg.png");
     iPauseSound(bgSoundIdx);
-    mbgSoundIdx = iPlaySound("assets/sounds/mainbg.wav", true, 20);
+    mbgSoundIdx = iPlaySound("assets/sounds/mainbg.wav", true, 50);
     
     iShowImage(0, 0, "assets/images/mainbg.png");
     iShowImage(space_x, space_y, space_image );
@@ -216,6 +216,20 @@ void iKeyboard(unsigned char key)
         space_y-=15;
         if(space_y<0){
             space_y=0;
+        }
+        break;
+    case 'm':
+        if(s_on_off==0)
+        {
+            iPauseSound(bgSoundIdx);
+            iPauseSound(mbgSoundIdx);
+            s_on_off++;
+        }
+        else if(s_on_off==1)
+        {
+            iResumeSound(bgSoundIdx);
+            iResumeSound(mbgSoundIdx);
+            s_on_off--;
         }
         break;
        
