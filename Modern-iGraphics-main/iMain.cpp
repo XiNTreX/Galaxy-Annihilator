@@ -20,7 +20,7 @@ void difficulty(){
     iShowImage(0,0, "assets/images/difficulty.png");
 }
 void mainpage1(){
-    iShowImage(0,0, "assets/images/mainbg.jpg");
+    iShowImage(0,0, "assets/images/mainbg.png");
 }
 void iDraw()
 {
