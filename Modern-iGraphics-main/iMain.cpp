@@ -243,9 +243,9 @@ void iKeyboard(unsigned char key)
     case 'w':
         // do something with 'q'
         space_y += 15;
-        if (space_y > 580)
+        if (space_y > 555)
         {
-            space_y = 580;
+            space_y = 555;
         }
 
         break;
@@ -260,18 +260,18 @@ void iKeyboard(unsigned char key)
         break;
     case 'd':
         space_x += 15;
-        if (space_x > 1080)
+        if (space_x > 1010)
         {
-            space_x = 1080;
+            space_x = 1010;
         }
         state = MOVE;
         break;
     case 's':
         // do something with 'q'
         space_y -= 15;
-        if (space_y < 0)
+        if (space_y < -48)
         {
-            space_y = 0;
+            space_y = -48;
         }
         break;
     case 'm':
@@ -284,7 +284,7 @@ void iKeyboard(unsigned char key)
         else if (s_on_off == 1)
         {
             iResumeSound(bgSoundIdx);
-            iResumeSound(mbgSoundIdx);
+            //iResumeSound(mbgSoundIdx);
             s_on_off--;
         }
         break;
