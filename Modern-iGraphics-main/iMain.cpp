@@ -75,8 +75,7 @@ void homepage()
 void difficulty()
 {
     iShowImage(0, 0, "assets/images/difficulty.png");
-    iPauseSound(mbgSoundIdx);
-    iResumeSound(bgSoundIdx);
+    
 }
 void mainpage1()
 {
@@ -279,7 +278,7 @@ void iKeyboard(unsigned char key)
         if (s_on_off == 0)
         {
             iPauseSound(bgSoundIdx);
-            iPauseSound(mbgSoundIdx);
+            //iPauseSound(mbgSoundIdx);
             s_on_off++;
         }
         else if (s_on_off == 1)
@@ -326,8 +325,8 @@ void iSpecialKeyboard(unsigned char key)
     case GLUT_KEY_END:
         if (gamestate == 2 || gamestate == 3 || gamestate == 4 || gamestate == 5)
             gamestate = 1;
-        else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
-            gamestate = 2;
+        /*else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
+            gamestate = 2;*/
 
         break;
     // place your codes for other keys here
