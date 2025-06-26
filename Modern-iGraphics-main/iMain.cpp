@@ -23,12 +23,13 @@ enum
     DESTROY
 };
 int gamestate = 1;
+int enemstate=1;
 int state = IDLE;
 int move_idx = 0;
 int des_idx = 0;
 int shoot_idx = 0;
 int space_x = 10, space_y = 300;
-
+int enem_x1=1200,enem_y1=500,enem_y2=100;
 char *space_image;
 char *shoot_image;
 int shoot_x[MAX_BULLETS];
@@ -39,9 +40,40 @@ int bullet_active[MAX_BULLETS];
 char shoot1[1][100];
 
 int b;
+Image bg,ship11[1],ship22[1],ship33[1],ship44[1],ship55[1],ship66[1],main11[1],bullet[1];
+Sprite main1,ship1,ship2,ship3,ship4,ship5,ship6,bull;
 /*
 function iDraw() is called again and again by the system.
 */
+void loadReasources(){
+    iInitSprite(&ship1,-1);
+	iLoadFramesFromFolder(ship11, "assets/images/sprites/enemy/Ship1/");
+    iInitSprite(&ship2,-1);
+	iLoadFramesFromFolder(ship22, "assets/images/sprites/enemy/Ship2/");
+    iInitSprite(&ship3,-1);
+	iLoadFramesFromFolder(ship33, "assets/images/sprites/enemy/Ship3/");
+    iInitSprite(&ship4,-1);
+	iLoadFramesFromFolder(ship44, "assets/images/sprites/enemy/Ship4/");
+    iInitSprite(&ship5,-1);
+	iLoadFramesFromFolder(ship55, "assets/images/sprites/enemy/Ship5/");
+    iInitSprite(&ship6,-1);
+	iLoadFramesFromFolder(ship66, "assets/images/sprites/enemy/Ship6/");
+    iInitSprite(&main1,-1);
+	iLoadFramesFromFolder(main11, "assets/images/sprites/Spaceship/Idle.png");
+    iInitSprite(&bull,-1);
+	iLoadFramesFromFolder(ship66, "assets/images/sprites/Spaceship/bullet/");
+    iScaleSprite(&ship1,1.7);
+    iScaleSprite(&ship2,1.7);
+    iScaleSprite(&ship3,1.7);
+    iScaleSprite(&ship4,1.7);
+    iScaleSprite(&ship5,1.7);
+    iScaleSprite(&ship6,1.7);
+    iSetSpritePosition(&ship1,enem_x1,enem_y1);
+    iSetSpritePosition(&ship2,enem_x1,enem_y2);
+    iChangeSpriteFrames(&ship1, ship11, 1);
+    iChangeSpriteFrames(&ship2, ship22, 1);
+    
+}
 void populate_space_images()
 {
     for (int i = 0; i < 21; i++)
@@ -71,6 +103,28 @@ void populate_space_images()
 void homepage()
 {
     iShowImage(0, 0, "assets/images/homepage_w_menu.png");
+    iLoadImage(&bg, "assets/images/mainbg.png");
+   /*  iInitSprite(&ship1);
+	iLoadFramesFromFolder(ship11, "assets/images/sprites/enemy/Ship1/Ship1.png");
+    iInitSprite(&ship2);
+	iLoadFramesFromFolder(ship22, "assets/images/sprites/enemy/Ship2/Ship2.png");
+    iInitSprite(&ship3);
+	iLoadFramesFromFolder(ship33, "assets/images/sprites/enemy/Ship3/Ship3.png");
+    iInitSprite(&ship4);
+	iLoadFramesFromFolder(ship44, "assets/images/sprites/enemy/Ship4/Ship4.png");
+    iInitSprite(&ship5);
+	iLoadFramesFromFolder(ship55, "assets/images/sprites/enemy/Ship5/Ship5.png");
+    iInitSprite(&ship6);
+	iLoadFramesFromFolder(ship66, "assets/images/sprites/enemy/Ship6/Ship6.png");
+    iInitSprite(&main1);
+	iLoadFramesFromFolder(main11, "assets/images/sprites/Spaceship/Idle.png");*/
+    iMirrorSprite(&ship1,HORIZONTAL);
+    iMirrorSprite(&ship2,HORIZONTAL);
+    iMirrorSprite(&ship3,HORIZONTAL);
+    iMirrorSprite(&ship4,HORIZONTAL);
+    iMirrorSprite(&ship5,HORIZONTAL);
+    iMirrorSprite(&ship6,HORIZONTAL);
+    
 }
 void difficulty()
 {
@@ -80,12 +134,17 @@ void difficulty()
 }
 void mainpage1()
 {
-    iShowImage(0, 0, "assets/images/mainbg.png");
+    iShowLoadedImage(0, 0, &bg);
+	iWrapImage(&bg, -1.5);
     iPauseSound(bgSoundIdx);
 
-    iShowImage(0, 0, "assets/images/mainbg.png");
+    
     // iWrapImage(bg_image,-50);//
     iShowImage(space_x, space_y, space_image);
+   // iSetSpritePosition(&ship1,enem_x1,enem_y1);//
+    iShowSprite(&ship1);
+    //iSetSpritePosition(&ship2,enem_x1,enem_y2);//
+    iShowSprite(&ship2);
     
     for (int i = 0; i < MAX_BULLETS; i++)
     {
@@ -93,10 +152,37 @@ void mainpage1()
         {
             iShowImage(shoot_x[i], shoot_y1[i], shoot_image);
             iShowImage(shoot_x[i], shoot_y2[i], shoot_image);
+           /* iSetSpritePosition(&bull,shoot_x[i], shoot_y1[i]);
+            iShowSprite(&bull);
+            iSetSpritePosition(&bull,shoot_x[i], shoot_y2[i]);
+            iShowSprite(&bull);*/
+        }
+    }
+
+}
+void update_enemy(){
+    if(gamestate==21){
+        switch(enemstate){
+            case 1:
+            enem_x1-=20;
+            iSetSpritePosition(&ship1,enem_x1,enem_y1);
+            iSetSpritePosition(&ship2,enem_x1,enem_y2);
+            iAnimateSprite(&ship1);
+            iAnimateSprite(&ship2);
+            if(enem_x1<-100){
+                enem_x1=1200;
+                enem_y1-=30;enem_y2-=30;
+                iSetSpritePosition(&ship1,enem_x1,enem_y1);
+                iSetSpritePosition(&ship2,enem_x1,enem_y2);
+            }
+            if(enem_y1<0){
+                enem_y1=200;
+            }if(enem_y2<0){
+                enem_y2=600;
+            }
         }
     }
 }
-
 void update_space()
 {
     switch (state)
@@ -343,6 +429,7 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     // place your own initialization codes here.
     populate_space_images();
+    loadReasources();
     iInitializeSound();
     bgSoundIdx = iPlaySound("assets/sounds/menubg.wav", true);
 
@@ -353,7 +440,7 @@ int main(int argc, char *argv[])
 
     iSetTimer(100, update_space);
     iSetTimer(50, shoot);
-
+    iSetTimer(100,update_enemy);
     iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
