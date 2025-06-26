@@ -129,7 +129,8 @@ void homepage()
 void difficulty()
 {
     iShowImage(0, 0, "assets/images/difficulty.png");
-    
+    iPauseSound(mbgSoundIdx);
+    iResumeSound(bgSoundIdx);
 }
 void mainpage1()
 {
@@ -329,9 +330,9 @@ void iKeyboard(unsigned char key)
     case 'w':
         // do something with 'q'
         space_y += 15;
-        if (space_y > 555)
+        if (space_y > 580)
         {
-            space_y = 555;
+            space_y = 580;
         }
 
         break;
@@ -346,31 +347,31 @@ void iKeyboard(unsigned char key)
         break;
     case 'd':
         space_x += 15;
-        if (space_x > 1010)
+        if (space_x > 1080)
         {
-            space_x = 1010;
+            space_x = 1080;
         }
         state = MOVE;
         break;
     case 's':
         // do something with 'q'
         space_y -= 15;
-        if (space_y < -48)
+        if (space_y < 0)
         {
-            space_y = -48;
+            space_y = 0;
         }
         break;
     case 'm':
         if (s_on_off == 0)
         {
             iPauseSound(bgSoundIdx);
-            //iPauseSound(mbgSoundIdx);
+            iPauseSound(mbgSoundIdx);
             s_on_off++;
         }
         else if (s_on_off == 1)
         {
             iResumeSound(bgSoundIdx);
-            //iResumeSound(mbgSoundIdx);
+            iResumeSound(mbgSoundIdx);
             s_on_off--;
         }
         break;
@@ -411,8 +412,8 @@ void iSpecialKeyboard(unsigned char key)
     case GLUT_KEY_END:
         if (gamestate == 2 || gamestate == 3 || gamestate == 4 || gamestate == 5)
             gamestate = 1;
-        /*else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
-            gamestate = 2;*/
+        else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
+            gamestate = 2;
 
         break;
     // place your codes for other keys here
