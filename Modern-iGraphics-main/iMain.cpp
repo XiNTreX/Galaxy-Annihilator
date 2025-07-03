@@ -10,6 +10,7 @@ int bgSoundIdx = -1;
 int mbgSoundIdx = -1;
 int s_on_off = 0;
 int a = 0;
+int ship1_health=1,ship2_health=2,ship3_health=3,ship4_health=4,ship5_health=5;
 
 char move_idle[6][100];
 char des_idle[21][100];
@@ -28,23 +29,25 @@ int state = IDLE;
 int move_idx = 0;
 int des_idx = 0;
 int shoot_idx = 0;
+int exp1_idx=0;
 int space_x = 10, space_y = 300;
-int enem_x1=1200,enem_y1=500,enem_y2=100;
+int enem_x1=1200,enem_x2=1200,enem_y1=500,enem_y2=100;
+int shi1=1,shi2=1,shi3=1,shi4=1,shi5=1;
 char *space_image;
 char *shoot_image;
-int shoot_x[MAX_BULLETS];
-int shoot_y1[MAX_BULLETS];
-int shoot_y2[MAX_BULLETS];
-int bullet_active[MAX_BULLETS];
+char *exp1;
+
+Sprite bullet_sprites[MAX_BULLETS];  
+int bullet_on_off[MAX_BULLETS];
+int bullet_x[MAX_BULLETS];  
+int bullet_y[MAX_BULLETS]; 
 
 char shoot1[1][100];
 
 int b;
-Image bg,ship11[1],ship22[1],ship33[1],ship44[1],ship55[1],ship66[1],main11[1],bullet[1];
-Sprite main1,ship1,ship2,ship3,ship4,ship5,ship6,bull;
-/*
-function iDraw() is called again and again by the system.
-*/
+Image bg,ship11[1],ship22[1],ship33[1],ship44[1],ship55[1],ship66[1],main11[1],bullet_img[1];
+Sprite main1,ship1,ship2,ship3,ship4,ship5,ship6;
+char exp11[10][100];
 void loadReasources(){
     iInitSprite(&ship1,-1);
 	iLoadFramesFromFolder(ship11, "assets/images/sprites/enemy/Ship1/");
@@ -60,20 +63,28 @@ void loadReasources(){
 	iLoadFramesFromFolder(ship66, "assets/images/sprites/enemy/Ship6/");
     iInitSprite(&main1,-1);
 	iLoadFramesFromFolder(main11, "assets/images/sprites/Spaceship/Idle.png");
-    iInitSprite(&bull,-1);
-	iLoadFramesFromFolder(ship66, "assets/images/sprites/Spaceship/bullet/");
+    
+    // Initialize bullet sprites
+    for(int i = 0; i < MAX_BULLETS; i++){
+        iInitSprite(&bullet_sprites[i], -1);
+        iLoadFramesFromFolder(bullet_img, "assets/images/sprites/Spaceship/bullet/");
+        iChangeSpriteFrames(&bullet_sprites[i], bullet_img, 1);
+        
+    }
+    
     iScaleSprite(&ship1,1.7);
     iScaleSprite(&ship2,1.7);
     iScaleSprite(&ship3,1.7);
     iScaleSprite(&ship4,1.7);
     iScaleSprite(&ship5,1.7);
     iScaleSprite(&ship6,1.7);
+   
     iSetSpritePosition(&ship1,enem_x1,enem_y1);
     iSetSpritePosition(&ship2,enem_x1,enem_y2);
     iChangeSpriteFrames(&ship1, ship11, 1);
     iChangeSpriteFrames(&ship2, ship22, 1);
-    
 }
+
 void populate_space_images()
 {
     for (int i = 0; i < 21; i++)
@@ -98,82 +109,119 @@ void populate_space_images()
         sprintf(shoot1[i], "assets/images/sprites/Spaceship/Charge_2.png", i);
     }
     shoot_image = shoot1[0];
+      for (int i = 0; i < 1; i++)
+    {
+        sprintf(exp11[i], "assets/images/sprites/enemy/explosions/Ship1_Explosion/Ship1_Explosion_%03d.png", i);
+    }
+    exp1=exp11[0];
 }
 
 void homepage()
 {
     iShowImage(0, 0, "assets/images/homepage_w_menu.png");
     iLoadImage(&bg, "assets/images/mainbg.png");
-   /*  iInitSprite(&ship1);
-	iLoadFramesFromFolder(ship11, "assets/images/sprites/enemy/Ship1/Ship1.png");
-    iInitSprite(&ship2);
-	iLoadFramesFromFolder(ship22, "assets/images/sprites/enemy/Ship2/Ship2.png");
-    iInitSprite(&ship3);
-	iLoadFramesFromFolder(ship33, "assets/images/sprites/enemy/Ship3/Ship3.png");
-    iInitSprite(&ship4);
-	iLoadFramesFromFolder(ship44, "assets/images/sprites/enemy/Ship4/Ship4.png");
-    iInitSprite(&ship5);
-	iLoadFramesFromFolder(ship55, "assets/images/sprites/enemy/Ship5/Ship5.png");
-    iInitSprite(&ship6);
-	iLoadFramesFromFolder(ship66, "assets/images/sprites/enemy/Ship6/Ship6.png");
-    iInitSprite(&main1);
-	iLoadFramesFromFolder(main11, "assets/images/sprites/Spaceship/Idle.png");*/
     iMirrorSprite(&ship1,HORIZONTAL);
     iMirrorSprite(&ship2,HORIZONTAL);
     iMirrorSprite(&ship3,HORIZONTAL);
     iMirrorSprite(&ship4,HORIZONTAL);
     iMirrorSprite(&ship5,HORIZONTAL);
     iMirrorSprite(&ship6,HORIZONTAL);
-    
+   //iMirrorSprite(&exp11,HORIZONTAL);//
 }
+
 void difficulty()
 {
     iShowImage(0, 0, "assets/images/difficulty.png");
     iPauseSound(mbgSoundIdx);
     iResumeSound(bgSoundIdx);
 }
+
+
+void checkBulletEnemyCollision() {
+    
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullet_on_off[i] == 1) {
+            
+            if (iCheckCollision(&bullet_sprites[i], &ship1)) {
+                bullet_on_off[i] = 0;
+                ship1_health--;
+                if(ship1_health<=0){
+               /* iInitSprite(&exp11, -1);
+	            iLoadFramesFromFolder(exp_1, "assets/images/sprites/enemy/explosions/Ship1_Explosion/");
+	            iChangeSpriteFrames(&exp11, exp_1, 10);
+	            iSetSpritePosition(&exp11,enem_x1,enem_y1);
+                iAnimateSprite(&exp11);
+                iShowSprite(&exp11);*/
+                iShowImage(enem_x1,enem_x2,exp1);
+                shi1=0;
+                ship1_health=1;
+                 }
+                  // Deactivate bullet
+                // Handle enemy hit (reduce health, play sound, etc.)
+                
+            }
+            
+            // Check collision with ship2
+            if (iCheckCollision(&bullet_sprites[i], &ship2)) {
+               bullet_on_off[i] = 0;  // Deactivate bullet
+                // Handle enemy hit (reduce health, play sound, etc.)
+                
+            }
+        }
+    }
+}
+
 void mainpage1()
 {
     iShowLoadedImage(0, 0, &bg);
 	iWrapImage(&bg, -1.5);
     iPauseSound(bgSoundIdx);
 
-    
-    // iWrapImage(bg_image,-50);//
     iShowImage(space_x, space_y, space_image);
-   // iSetSpritePosition(&ship1,enem_x1,enem_y1);//
+  
+
     iShowSprite(&ship1);
-    //iSetSpritePosition(&ship2,enem_x1,enem_y2);//
     iShowSprite(&ship2);
     
+    // Display active bullet sprites
     for (int i = 0; i < MAX_BULLETS; i++)
     {
-        if (bullet_active[i] == 1)
+        if (bullet_on_off[i] == 1)
         {
-            iShowImage(shoot_x[i], shoot_y1[i], shoot_image);
-            iShowImage(shoot_x[i], shoot_y2[i], shoot_image);
-           /* iSetSpritePosition(&bull,shoot_x[i], shoot_y1[i]);
-            iShowSprite(&bull);
-            iSetSpritePosition(&bull,shoot_x[i], shoot_y2[i]);
-            iShowSprite(&bull);*/
+            iShowSprite(&bullet_sprites[i]);
         }
     }
-
+    
+    // Check for collisions
+    checkBulletEnemyCollision();
 }
+
 void update_enemy(){
     if(gamestate==21){
         switch(enemstate){
             case 1:
             enem_x1-=20;
+            enem_x2-=20;
             iSetSpritePosition(&ship1,enem_x1,enem_y1);
-            iSetSpritePosition(&ship2,enem_x1,enem_y2);
+            iSetSpritePosition(&ship2,enem_x2,enem_y2);
             iAnimateSprite(&ship1);
             iAnimateSprite(&ship2);
+            if(shi1==0){
+                enem_x1=1300;
+                shi1=1;
+            }
+            
             if(enem_x1<-100){
                 enem_x1=1200;
                 enem_y1-=30;enem_y2-=30;
                 iSetSpritePosition(&ship1,enem_x1,enem_y1);
-                iSetSpritePosition(&ship2,enem_x1,enem_y2);
+                iSetSpritePosition(&ship2,enem_x2,enem_y2);
+            }
+            if(enem_x2<-100){
+                enem_x2=1200;
+                enem_y1-=30;enem_y2-=30;
+                iSetSpritePosition(&ship1,enem_x1,enem_y1);
+                iSetSpritePosition(&ship2,enem_x2,enem_y2);
             }
             if(enem_y1<0){
                 enem_y1=200;
@@ -183,6 +231,7 @@ void update_enemy(){
         }
     }
 }
+
 void update_space()
 {
     switch (state)
@@ -210,27 +259,41 @@ void update_space()
         {
             state = IDLE;
         }
-       
         break;
     }
+  
 }
+void explosion(){
+      if(ship1_health==0){
+        exp1=exp11[exp1_idx];
+        exp1_idx=(exp1_idx+1)%10;
+    }
+}
+
+// Updated shoot function for sprite bullets
 void shoot()
 {
     for (int i = 0; i < MAX_BULLETS; i++)
     {
-        if (bullet_active[i] == 1)
+        if (bullet_on_off[i] == 1)
         {
-            shoot_x[i] += 80;
-            if (shoot_x[i] > SCREEN_WIDTH)
+            // Move bullet to the right
+            bullet_x[i] += 80;
+            
+            // Update sprite position
+            iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+            
+            // Deactivate bullet if it goes off screen
+            if (bullet_x[i] > SCREEN_WIDTH)
             {
-                bullet_active[i] = 0;
+                bullet_on_off[i] = 0;
             }
         }
     }
 }
+
 void iDraw()
 {
-    // place your drawing codes here
     iClear();
     switch (gamestate)
     {
@@ -245,98 +308,59 @@ void iDraw()
         break;
     }
 }
-/*
-function iMouseMove() is called when the user moves the mouse.
-(mx, my) is the position where the mouse pointer is.
-*/
+
 void iMouseMove(int mx, int my)
 {
-    // place your codes here
 }
 
-/*
-function iMouseDrag() is called when the user presses and drags the mouse.
-(mx, my) is the position where the mouse pointer is.
-*/
 void iMouseDrag(int mx, int my)
 {
-    // place your codes here
 }
 
-/*
-function iMouse() is called when the user presses/releases the mouse.
-(mx, my) is the position where the mouse pointer is.
-*/
 void iMouse(int button, int state, int mx, int my)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-
         switch (gamestate)
         {
         case 1:
             if ((430 <= mx && mx <= 780) && (350 <= my && my <= 405))
                 gamestate = 2;
-
             else if ((430 <= mx && mx <= 780) && (270 <= my && my <= 325))
                 gamestate = 3;
-
             else if ((430 <= mx && mx <= 780) && (190 <= my && my <= 245))
                 gamestate = 4;
-
             else if ((430 <= mx && mx <= 780) && (110 <= my && my <= 165))
                 gamestate = 5;
-
             break;
 
         case 2:
             if ((430 <= mx && mx <= 780) && (325 <= my && my <= 380))
                 gamestate = 21;
-
             else if ((430 <= mx && mx <= 780) && (225 <= my && my <= 280))
                 gamestate = 22;
-
             else if ((430 <= mx && mx <= 780) && (120 <= my && my <= 180))
                 gamestate = 23;
-
             break;
         }
-       
-    }
-    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
-    {
-        // place your codes here
-        
     }
 }
 
-/*
-function iMouseWheel() is called when the user scrolls the mouse wheel.
-dir = 1 for up, -1 for down.
-*/
 void iMouseWheel(int dir, int mx, int my)
 {
-    // place your code here
 }
 
-/*
-function iKeyboard() is called whenever the user hits a key in keyboard.
-key- holds the ASCII value of the key pressed.
-*/
 void iKeyboard(unsigned char key)
 {
     switch (key)
     {
     case 'w':
-        // do something with 'q'
         space_y += 15;
         if (space_y > 580)
         {
             space_y = 580;
         }
-
         break;
-    // place your codes for other keys here
     case 'a':
         space_x -= 15;
         if (space_x < 0)
@@ -354,7 +378,6 @@ void iKeyboard(unsigned char key)
         state = MOVE;
         break;
     case 's':
-        // do something with 'q'
         space_y -= 15;
         if (space_y < 0)
         {
@@ -376,35 +399,35 @@ void iKeyboard(unsigned char key)
         }
         break;
     case 'p':
-        for (int i = 0; i < MAX_BULLETS; i++)
+        // Create two bullet sprites (dual row)
+        for (int i = 0; i < MAX_BULLETS - 1; i += 2)  // Increment by 2 for pairs
         {
-            if (bullet_active[i] == 0)
+            if (bullet_on_off[i] == 0 && bullet_on_off[i+1] == 0)
             {
-                shoot_x[i] = space_x + 190;
-                shoot_y1[i] = space_y + 90;
-                shoot_y2[i] = space_y + 77;
-                bullet_active[i] = 1;
+                // First bullet (upper row)
+                bullet_x[i] = space_x + 190;
+                bullet_y[i] = space_y + 90;
+                iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+                bullet_on_off[i] = 1;
+                
+                // Second bullet (lower row)
+                bullet_x[i+1] = space_x + 190;
+                bullet_y[i+1] = space_y + 77;
+                iSetSpritePosition(&bullet_sprites[i+1], bullet_x[i+1], bullet_y[i+1]);
+                
+                bullet_on_off[i+1] = 1;
+                
                 break;
             }
         }
         state = SHOOT;
         shoot_idx = 0;
-
         break;
     default:
         break;
     }
 }
 
-/*
-function iSpecialKeyboard() is called whenver user hits special keys likefunction
-keys, home, end, pg up, pg down, arraows etc. you have to use
-appropriate constants to detect them. A list is:
-GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6,
-GLUT_KEY_F7, GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11,
-GLUT_KEY_F12, GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN,
-GLUT_KEY_PAGE_UP, GLUT_KEY_PAGE_DOWN, GLUT_KEY_HOME, GLUT_KEY_END,
-GLUT_KEY_INSERT */
 void iSpecialKeyboard(unsigned char key)
 {
     switch (key)
@@ -414,11 +437,7 @@ void iSpecialKeyboard(unsigned char key)
             gamestate = 1;
         else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
             gamestate = 2;
-
         break;
-    // place your codes for other keys here
-    case GLUT_KEY_INSERT:
-
     default:
         break;
     }
@@ -427,7 +446,6 @@ void iSpecialKeyboard(unsigned char key)
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    // place your own initialization codes here.
     populate_space_images();
     loadReasources();
     iInitializeSound();
@@ -435,7 +453,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < MAX_BULLETS; i++)
     {
-        bullet_active[i] = 0;
+        bullet_on_off[i] = 0;
     }
 
     iSetTimer(100, update_space);
