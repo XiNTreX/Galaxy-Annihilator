@@ -72,7 +72,7 @@ void loadReasources(){
         
     }
     
-    iScaleSprite(&ship1,1.7); //scsc 
+    iScaleSprite(&ship1,1.7);
     iScaleSprite(&ship2,1.7);
     iScaleSprite(&ship3,1.7);
     iScaleSprite(&ship4,1.7);
@@ -350,14 +350,10 @@ void iMouseWheel(int dir, int mx, int my)
 {
 }
 
-void iKeyboard(unsigned char key, int state)
+void iKeyboard(unsigned char key, int)
 {
     switch (key)
     {
-    case 'q':
-    // do something with 'q'
-    iCloseWindow();
-    break;
     case 'w':
         space_y += 15;
         if (space_y > 580)
@@ -432,7 +428,7 @@ void iKeyboard(unsigned char key, int state)
     }
 }
 
-void iSpecialKeyboard(unsigned char key, int state)
+void iSpecialKeyboard(unsigned char key, int)
 {
     switch (key)
     {
@@ -463,8 +459,10 @@ int main(int argc, char *argv[])
     iSetTimer(100, update_space);
     iSetTimer(50, shoot);
     iSetTimer(100,update_enemy);
-    //iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
+
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
 
     return 0;
 }
+
+
