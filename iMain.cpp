@@ -72,7 +72,7 @@ void loadReasources(){
         
     }
     
-    iScaleSprite(&ship1,1.7);
+    iScaleSprite(&ship1,1.7); //scsc 
     iScaleSprite(&ship2,1.7);
     iScaleSprite(&ship3,1.7);
     iScaleSprite(&ship4,1.7);
