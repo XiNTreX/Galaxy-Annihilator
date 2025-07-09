@@ -49,24 +49,24 @@ Image bg,ship11[1],ship22[1],ship33[1],ship44[1],ship55[1],ship66[1],main11[1],b
 Sprite main1,ship1,ship2,ship3,ship4,ship5,ship6;
 char exp11[10][100];
 void loadReasources(){
-    iInitSprite(&ship1,-1);
+    iInitSprite(&ship1);
 	iLoadFramesFromFolder(ship11, "assets/images/sprites/enemy/Ship1/");
-    iInitSprite(&ship2,-1);
+    iInitSprite(&ship2);
 	iLoadFramesFromFolder(ship22, "assets/images/sprites/enemy/Ship2/");
-    iInitSprite(&ship3,-1);
+    iInitSprite(&ship3);
 	iLoadFramesFromFolder(ship33, "assets/images/sprites/enemy/Ship3/");
-    iInitSprite(&ship4,-1);
+    iInitSprite(&ship4);
 	iLoadFramesFromFolder(ship44, "assets/images/sprites/enemy/Ship4/");
-    iInitSprite(&ship5,-1);
+    iInitSprite(&ship5);
 	iLoadFramesFromFolder(ship55, "assets/images/sprites/enemy/Ship5/");
-    iInitSprite(&ship6,-1);
+    iInitSprite(&ship6);
 	iLoadFramesFromFolder(ship66, "assets/images/sprites/enemy/Ship6/");
-    iInitSprite(&main1,-1);
+    iInitSprite(&main1);
 	iLoadFramesFromFolder(main11, "assets/images/sprites/Spaceship/Idle.png");
     
     // Initialize bullet sprites
     for(int i = 0; i < MAX_BULLETS; i++){
-        iInitSprite(&bullet_sprites[i], -1);
+        iInitSprite(&bullet_sprites[i]);
         iLoadFramesFromFolder(bullet_img, "assets/images/sprites/Spaceship/bullet/");
         iChangeSpriteFrames(&bullet_sprites[i], bullet_img, 1);
         
@@ -350,10 +350,14 @@ void iMouseWheel(int dir, int mx, int my)
 {
 }
 
-void iKeyboard(unsigned char key)
+void iKeyboard(unsigned char key, int state)
 {
     switch (key)
     {
+    case 'q':
+    // do something with 'q'
+    iCloseWindow();
+    break;
     case 'w':
         space_y += 15;
         if (space_y > 580)
@@ -428,7 +432,7 @@ void iKeyboard(unsigned char key)
     }
 }
 
-void iSpecialKeyboard(unsigned char key)
+void iSpecialKeyboard(unsigned char key, int state)
 {
     switch (key)
     {
@@ -459,7 +463,8 @@ int main(int argc, char *argv[])
     iSetTimer(100, update_space);
     iSetTimer(50, shoot);
     iSetTimer(100,update_enemy);
-    iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
+    //iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
+    iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
 
     return 0;
 }

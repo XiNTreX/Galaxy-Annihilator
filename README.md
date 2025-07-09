@@ -12,7 +12,7 @@
 
 [iGraphics.h](https://github.com/mahirlabibdihan/Modern-iGraphics/blob/main/iGraphics.h) header file contains some drawing functions that can be used to draw basic graphical shapes in C++. These functions are implemented in OpenGL. Users of iGraphics do not need any knowledge of OpenGL to use it. Simply calling the drawing functions a user can draw any 2D shape on screen. This library also provides easy ways for animation, keyboard and mouse event handling.
 
-It was originally created by [Shahriar Nirjon](https://www.cs.unc.edu/~nirjon/) on 2009 with limited functionalities and only for Windows. This is an extended version of the original iGraphics library with support for multiple image formats, sound engine, sprite management, collision detection and advanced mouse control. The library is now **cross-platform** and works on both **Windows** and **Linux**. Updates will be added incrementally based on requests.
+It was originally created by [Shahriar Nirjon](https://www.cs.unc.edu/~nirjon/) on 2009 with limited functionalities and only for Windows. This is an extended version of the original iGraphics library with support for multiple image formats, custom fonts, sound engine, sprite management, collision detection and advanced mouse-keyboard control. The library is now **cross-platform** and works on both **Windows** and **Linux**. Updates will be added incrementally based on requests.
 
 <!-- Besides, the original library used `glut`, which is upgraded to `freeglut` in this version. -->
 
@@ -30,20 +30,51 @@ It was originally created by [Shahriar Nirjon](https://www.cs.unc.edu/~nirjon/) 
 
 ## 🎥 Example Games
 
--   [DxBall](https://youtu.be/J9kCPZOhV7A?si=nP5pI-Xvn4eHt2Tw)
--   [Platformer Game](https://youtu.be/Fb0ucPYe3sE?si=vNgahtO5K5mCn1Eb)
--   [Flappy Bird](https://youtu.be/hjveGbF3tzE?si=M9HfChSBx1hdfUtU)
--   [Chess](https://youtu.be/8GeTDn3IZIY?si=hjPXHMog1PPCoPAI)
--   [Tetris](https://youtu.be/jC8eX8RNuUM?si=ai22EmpSUbyJSyTN)
--   [Snake Game](https://youtu.be/mjOVhspXOjY?si=VVC-PrjMz3F79m_f)
+- [DxBall](https://youtu.be/J9kCPZOhV7A?si=nP5pI-Xvn4eHt2Tw)
+- [Platformer Game](https://youtu.be/Fb0ucPYe3sE?si=vNgahtO5K5mCn1Eb)
+- [Flappy Bird](https://youtu.be/hjveGbF3tzE?si=M9HfChSBx1hdfUtU)
+- [Chess](https://youtu.be/8GeTDn3IZIY?si=hjPXHMog1PPCoPAI)
+- [Tetris](https://youtu.be/jC8eX8RNuUM?si=ai22EmpSUbyJSyTN)
+- [Snake Game](https://youtu.be/mjOVhspXOjY?si=VVC-PrjMz3F79m_f)
+
+You can find executable games [here](https://github.com/mahirlabibdihan/Modern-iGraphics/releases/download/v0.0.1/demo.zip)
 
 ---
 
+## Necessary Files
+
+- Download the `Modern-iGraphics-main.zip` file from [here](https://github.com/mahirlabibdihan/Modern-iGraphics/archive/refs/heads/main.zip) and extract it.
+- Download `MINGW.zip` file from [here](https://github.com/mahirlabibdihan/Modern-iGraphics/releases/download/v0.0.1/MINGW.zip) and extract it.
+- Copy the `MINGW` folder to the extracted `Modern-iGraphics-main` folder.
+- The final folder structure should look like this:
+
+```
+Modern-iGraphics-main
+├── MINGW
+│   ├── bin
+│   ├── include
+│   ├── lib
+│   ├── ....
+│   └── share
+├── OpenGL
+├── assets
+├── bin
+├── obj
+├── examples
+├── iGraphics.h
+├── iGraphics.cbp
+├── iMain.cpp
+├── ....
+```
+
 ## 🧱 Setup in Code::Blocks
 
-Download the ZIP file from [here](https://github.com/mahirlabibdihan/Modern-iGraphics/archive/refs/heads/main.zip) and extract it.
+Change the compiler path of Code::Blocks as following:
+`Settings` → `Compiler` → Go to `Toolchain executables` tab → Change the `Compiler's installation directory` to the `MINGW` directory in the iGraphics folder. You can do that by clicking the three dots (`...`) on right. After you change the compiler, clear the `.o` files inside `obj` folder (If there is any).
 
 Open `iGraphics.cbp` in Code::Blocks. The project is already configured with all the necessary settings. You can directly run the project. By default, the main file is `iMain.cpp`. You can remove it and add a different file if you want.
+
+_You can find the slides with step-by-step screenshots_ [here](https://docs.google.com/presentation/d/1VTaBzzTKQhPsGCA9_CBIUZvDUh3l6v3_gnTCPSLk_XM/edit?usp=sharing).
 
 ---
 
@@ -62,18 +93,43 @@ Alternatively, you can download the ZIP file from [here](https://github.com/mahi
 **Running the Example**:
 Ensure that `g++` is installed on your system and available in your PATH. Then, run the following command to compile and execute the example program:
 
--   **Windows**
+- **Windows**
 
 ```bash
 .\runner.bat examples\BallDemo.cpp
 ```
 
--   **Linux**
+- **Linux**
 
 ```bash
-sudo apt install libsdl2-dev libsdl2-mixer-dev # Install SDL2 and SDL2_mixer if not already installed
+sudo apt install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+sudo apt install libsdl2-dev libsdl2-mixer-dev
+sudo apt install libfreetype6-dev
 ./runner.sh examples/BallDemo.cpp
 ```
+
+<!-- Release Guideline -->
+
+## 📦 Release Guideline (Windows)
+
+- **Organize Your Assets**
+
+  - Ensure all game assets (images, sprites, sounds, level designs, etc.) are inside the assets folder.
+  - Remove any unnecessary or default assets to save space.
+
+- **Save Files**
+
+  - Place any saved game data in the saves folder.
+
+- **Run the Release Script**
+
+  - Double-click release.bat or run it from the terminal using:
+    `.\release.bat iMain.cpp`
+
+- **Check the Output**
+  - After execution, a release folder will be created. Navigate to:
+    `release → windows → x86`
+  - Inside, you’ll find the necessary files to run your game. Please test `game.exe` to ensure your game runs properly.
 
 <!-- ### Step 1: Create a New Project
 
@@ -194,12 +250,13 @@ void iMouseWheel(int dir, int mx, int my)
 function iKeyboard() is called whenever the user hits a key in keyboard.
 key- holds the ASCII value of the key pressed.
 */
-void iKeyboard(unsigned char key)
+void iKeyboard(unsigned char key, int state)
 {
     switch (key)
     {
     case 'q':
         // do something with 'q'
+        iCloseWindow();
         break;
     // place your codes for other keys here
     default:
@@ -216,7 +273,7 @@ GLUT_KEY_F7, GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11,
 GLUT_KEY_F12, GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN,
 GLUT_KEY_PAGE_UP, GLUT_KEY_PAGE_DOWN, GLUT_KEY_HOME, GLUT_KEY_END,
 GLUT_KEY_INSERT */
-void iSpecialKeyboard(unsigned char key)
+void iSpecialKeyboard(unsigned char key, int state)
 {
     switch (key)
     {
@@ -232,8 +289,9 @@ void iSpecialKeyboard(unsigned char key)
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    //place your own initialization codes here.
-    iInitialize(400, 400, "demooo");
+    // Initialization code before opening the window
+    iOpenWindow(400, 400, "iGraphics");
+    // Execution will continue from here once iCloseWindow() is called.
     return 0;
 }
 ```
@@ -244,323 +302,381 @@ int main(int argc, char *argv[])
 
 ### 🖼️ Graphics Functions
 
-#### `void iInitialize(int width=500, int height=500, char* title="iGraphics")`
+#### `void iOpenWindow(int width=500, int height=500, char* title="iGraphics")`
 
--   **Description:** Creates a window of specified size and title.
--   **Parameters:**
-    -   `width`: Width of the window.
-    -   `height`: Height of the window.
-    -   `title`: Title of the window.
--   **Example:**
-    ```cpp
-    iInitialize(300, 300, "demooo");
-    ```
+- **Description:** Creates a window of specified size and title.
+- **Parameters:**
+  - `width`: Width of the window.
+  - `height`: Height of the window.
+  - `title`: Title of the window.
+- **Example:**
+  ```cpp
+  iOpenWindow(300, 300, "iGraphics");
+  ```
+
+#### `void iCloseWindow()`
+
+- **Description:** Closes the current window.
+- **Parameters:** None
+- **Example:**
+  ```cpp
+  void iKeyboard(unsigned char key, int state)
+  {
+      switch (key)
+      {
+      case 'q':
+          iCloseWindow();
+          break;
+      default:
+          break;
+      }
+  }
+  ```
 
 #### `void iClear()`
 
--   **Description:** Clears the screen.
--   **Parameters:** None
--   **Example:**
-    ```cpp
-    iClear();
-    ```
+- **Description:** Clears the screen.
+- **Parameters:** None
+- **Example:**
+  ```cpp
+  iClear();
+  ```
 
 #### `void iSetColor(int r, int g, int b)`
 
--   **Description:** Sets current drawing color.
--   **Parameters:**
-    -   `r`: Red component of color (0-255).
-    -   `g`: Green component of color (0-255).
-    -   `b`: Blue component of color (0-255).
--   **Example:**
-    ```cpp
-    iSetColor(255, 0, 0); // Red
-    ```
+- **Description:** Sets current drawing color.
+- **Parameters:**
+  - `r`: Red component of color (0-255).
+  - `g`: Green component of color (0-255).
+  - `b`: Blue component of color (0-255).
+- **Example:**
+  ```cpp
+  iSetColor(255, 0, 0); // Red
+  ```
 
 #### `void iSetTransparentColor(int r, int g, int b, double a)`
 
--   **Description:** Sets current drawing color with transparency.
--   **Parameters:**
-    -   `r`, `g`, `b`: RGB values (0-255).
-    -   `a`: Alpha value (0.0 to 1.0).
--   **Example:**
-    ```cpp
-      iSetTransparentColor(255, 0, 0, 0.5); // Semi-transparent red
-    ```
+- **Description:** Sets current drawing color with transparency.
+- **Parameters:**
+  - `r`, `g`, `b`: RGB values (0-255).
+  - `a`: Alpha value (0.0 to 1.0).
+- **Example:**
+  ```cpp
+    iSetTransparentColor(255, 0, 0, 0.5); // Semi-transparent red
+  ```
 
 #### `void iGetPixelColor(int x, int y, int rgb[])`
 
--   **Description:** Gets pixel color at coordinate `(x, y)`.
--   **Parameters:**
-    -   `x`, `y`: Coordinates of the pixel.
-    -   `rgb[]`: Array to store RGB values.
--   **Example:**
-    ```cpp
-    iGetPixelColor(100, 120, array);
-    ```
+- **Description:** Gets pixel color at coordinate `(x, y)`.
+- **Parameters:**
+  - `x`, `y`: Coordinates of the pixel.
+  - `rgb[]`: Array to store RGB values.
+- **Example:**
+  ```cpp
+  iGetPixelColor(100, 120, array);
+  ```
 
 #### `void iPoint(double x, double y, int size=0)`
 
--   **Description:** Draws a point at `(x, y)` using current color.
--   **Parameters:**
-    -   `x`, `y`: Coordinates.
-    -   `size`: Optional size.
--   **Example:**
-    ```cpp
-    iPoint(10, 20);
-    ```
+- **Description:** Draws a point at `(x, y)` using current color.
+- **Parameters:**
+  - `x`, `y`: Coordinates.
+  - `size`: Optional size.
+- **Example:**
+  ```cpp
+  iPoint(10, 20);
+  ```
 
 #### `void iLine(double x1, double y1, double x2, double y2)`
 
--   **Description:** Draws a line between two points.
--   **Parameters:**
-    -   `x1`, `y1`: One end.
-    -   `x2`, `y2`: Other end.
--   **Example:**
-    ```cpp
-    iLine(10, 20, 100, 120);
-    ```
+- **Description:** Draws a line between two points.
+- **Parameters:**
+  - `x1`, `y1`: One end.
+  - `x2`, `y2`: Other end.
+- **Example:**
+  ```cpp
+  iLine(10, 20, 100, 120);
+  ```
 
 #### `void iCircle(double x, double y, double r, int slices=100)`
 
--   **Description:** Draws a circle.
--   **Parameters:**
-    -   `x`, `y`: Center.
-    -   `r`: Radius.
-    -   `slices`: Segments to draw.
--   **Example:**
-    ```cpp
-    iCircle(10, 20, 10);
-    ```
+- **Description:** Draws a circle.
+- **Parameters:**
+  - `x`, `y`: Center.
+  - `r`: Radius.
+  - `slices`: Segments to draw.
+- **Example:**
+  ```cpp
+  iCircle(10, 20, 10);
+  ```
 
 #### `void iFilledCircle(double x, double y, double r, int slices=100)`
 
--   **Description:** Draws a filled circle.
--   **Parameters:**
-    -   Same as `iCircle`.
--   **Example:**
-    ```cpp
-    iFilledCircle(10, 20, 10);
-    ```
+- **Description:** Draws a filled circle.
+- **Parameters:**
+  - Same as `iCircle`.
+- **Example:**
+  ```cpp
+  iFilledCircle(10, 20, 10);
+  ```
 
 #### `void iEllipse(double x, double y, double a, double b, int slices=100)`
 
--   **Description:** Draws an ellipse.
--   **Parameters:**
-    -   `x`, `y`: Center.
-    -   `a`, `b`: Axes lengths.
-    -   `slices`: Segments to draw.
--   **Example:**
-    ```cpp
-    iEllipse(10, 20, 10, 5);
-    ```
+- **Description:** Draws an ellipse.
+- **Parameters:**
+  - `x`, `y`: Center.
+  - `a`, `b`: Axes lengths.
+  - `slices`: Segments to draw.
+- **Example:**
+  ```cpp
+  iEllipse(10, 20, 10, 5);
+  ```
 
 #### `void iFilledEllipse(double x, double y, double a, double b, int slices=100)`
 
--   **Description:** Draws a filled ellipse.
--   **Parameters:** Same as `iEllipse`.
--   **Example:**
-    ```cpp
-    iFilledEllipse(10, 20, 10, 5);
-    ```
+- **Description:** Draws a filled ellipse.
+- **Parameters:** Same as `iEllipse`.
+- **Example:**
+  ```cpp
+  iFilledEllipse(10, 20, 10, 5);
+  ```
 
 #### `void iRectangle(double left, double bottom, double dx, double dy)`
 
--   **Description:** Draws a rectangle.
--   **Parameters:**
-    -   `left`: x-coordinate of bottom-left.
-    -   `bottom`: y-coordinate of bottom-left.
-    -   `dx`: Width.
-    -   `dy`: Height.
--   **Example:**
-    ```cpp
-    iRectangle(10, 20, 10, 5);
-    ```
+- **Description:** Draws a rectangle.
+- **Parameters:**
+  - `left`: x-coordinate of bottom-left.
+  - `bottom`: y-coordinate of bottom-left.
+  - `dx`: Width.
+  - `dy`: Height.
+- **Example:**
+  ```cpp
+  iRectangle(10, 20, 10, 5);
+  ```
 
 #### `void iFilledRectangle(double left, double bottom, double dx, double dy)`
 
--   **Description:** Draws a filled-rectangle on the screen with current color.
--   **Parameters:** Same as `iRectangle`.
--   **Example:**
-    ```cpp
-    iFilledRectangle(10, 20, 10, 5);
-    ```
+- **Description:** Draws a filled-rectangle on the screen with current color.
+- **Parameters:** Same as `iRectangle`.
+- **Example:**
+  ```cpp
+  iFilledRectangle(10, 20, 10, 5);
+  ```
 
 #### `void iPolygon(double x[], double y[], int n)`
 
--   **Description:** Draws a polygon on the screen with current color.
--   **Parameters:**
-    -   `x`, `y`: Arrays of coordinates of vertices.
-    -   `n`: Number of vertices.
--   **Example:**
-    ```cpp
-    double xa[] = {0, 10, 5};
-    double ya[] = {0, 0, 10};
-    iPolygon(xa, ya, 3);
-    ```
+- **Description:** Draws a polygon on the screen with current color.
+- **Parameters:**
+  - `x`, `y`: Arrays of coordinates of vertices.
+  - `n`: Number of vertices.
+- **Example:**
+  ```cpp
+  double xa[] = {0, 10, 5};
+  double ya[] = {0, 0, 10};
+  iPolygon(xa, ya, 3);
+  ```
 
 #### `void iFilledPolygon(double x[], double y[], int n)`
 
--   **Description:** Draws a filled-polygon on the screen with current color.
--   **Parameters:** Same as `iPolygon`.
--   **Example:**
-    ```cpp
-    double xa[] = {0, 10, 5};
-    double ya[] = {0, 0, 10};
-    iFilledPolygon(xa, ya, 3);
-    ```
+- **Description:** Draws a filled-polygon on the screen with current color.
+- **Parameters:** Same as `iPolygon`.
+- **Example:**
+  ```cpp
+  double xa[] = {0, 10, 5};
+  double ya[] = {0, 0, 10};
+  iFilledPolygon(xa, ya, 3);
+  ```
 
 #### `void iSetLineWidth(float width)`
 
--   **Description:** Sets the width of lines to be drawn.
--   **Parameters:** `width`
+- **Description:** Sets the width of lines to be drawn.
+- **Parameters:** `width`
 
 #### `void iText(double x, double y, char *str, void* font=GLUT_BITMAP_8_BY_13)`
 
--   **Description:** Displays a string on screen.
--   **Parameters:**
-    -   `x`, `y`: Coordinates of the first character.
-    -   `str`: The text to display.
-    -   `font`: (Optional) Font type. Available fonts include:
-        -   `GLUT_BITMAP_8_BY_13`
-        -   `GLUT_BITMAP_9_BY_15`
-        -   `GLUT_BITMAP_TIMES_ROMAN_10`
-        -   `GLUT_BITMAP_TIMES_ROMAN_24`
-        -   `GLUT_BITMAP_HELVETICA_10`
-        -   `GLUT_BITMAP_HELVETICA_12`
-        -   `GLUT_BITMAP_HELVETICA_18`
--   **Example:** `iText(50, 60, "This is a text", GLUT_BITMAP_TIMES_ROMAN_10);`
+- **Description:** Displays a string on screen.
+- **Parameters:**
+  - `x`, `y`: Coordinates of the first character.
+  - `str`: The text to display.
+  - `font`: (Optional) Font type. Available fonts include:
+    - `GLUT_BITMAP_8_BY_13`
+    - `GLUT_BITMAP_9_BY_15`
+    - `GLUT_BITMAP_TIMES_ROMAN_10`
+    - `GLUT_BITMAP_TIMES_ROMAN_24`
+    - `GLUT_BITMAP_HELVETICA_10`
+    - `GLUT_BITMAP_HELVETICA_12`
+    - `GLUT_BITMAP_HELVETICA_18`
+- **Example:** `iText(50, 60, "This is a text", GLUT_BITMAP_TIMES_ROMAN_10);`
 
-#### `void iTextBold(double x, double y, char *str, void* font=GLUT_BITMAP_8_BY_13)`
+#### `void iRotate(double x, double y, double degree)`
 
--   **Description:** Displays a bold string on screen.
+- **Description:** Rotates the coordinate system around a point.
+- **Parameters:**
+  - `x`, `y`: Coordinates of the point to rotate around.
+  - `degree`: Angle in degrees to rotate.
+- **Example:**
+  ```cpp
+  iRotate(100, 100, 45); // Rotate around point (100, 100) by 45 degrees
+  iShowImage(50, 50, "image.png"); // This image will be rotated
+  iUnRotate();
+  ```
 
-#### `void iTextAdvanced(double x, double y, const char *str, float scale = 0.3, float weight = 1.0, void *font = GLUT_STROKE_ROMAN)`
+#### `void iScale(double x, double y, double scaleX, double scaleY)`
 
--   **Description:** Displays a string on screen with specified scale and weight.
--   **Parameters:**
-    -   `x`, `y`: Coordinates of the first character.
-    -   `str`: The text to display.
-    -   `scale`: Scale factor for the text.
-    -   `weight`: Weight of the text (1.0 for normal, 2.0 for bold).
-    -   `font`: Font type (default is `GLUT_STROKE_ROMAN`).
--   **Example:** `iTextAdvanced(50, 60, "This is a text", 0.5, 2.0);`
+- **Description:** Scales the coordinate system around a point.
+- **Parameters:**
+  - `x`, `y`: Coordinates of the point to scale around.
+  - `scaleX`: Scaling factor in the x-direction.
+  - `scaleY`: Scaling factor in the y-direction.
+  - **Example:**
+  ```cpp
+  iScale(0,0, 2.0, 1.5); // Scale around the origin (0, 0) by 2.0 in x and 1.5 in y
+  // This will affect all subsequent drawing operations
+  iUnScale();
+  ```
 
 ### ⏱️ Animation and Timer
 
 #### `int iSetTimer(int msec, void (*f)(void))`
 
--   **Description:** Repeatedly executes a function at specified time intervals.
--   **Parameters:**
-    -   `msec`: Time interval in milliseconds.
-    -   `f`: Function to be executed.
--   **Returns:** Timer index.
--   **Example:**
+- **Description:** Repeatedly executes a function at specified time intervals.
+- **Parameters:**
+  - `msec`: Time interval in milliseconds.
+  - `f`: Function to be executed.
+- **Returns:** Timer index.
+- **Example:**
 
-    ```cpp
-    void func() {
-        //code of the task that will be repeated.
-    }
+  ```cpp
+  void func() {
+      //code of the task that will be repeated.
+  }
 
-    int main(int argc, char *argv[])
-    {
-        ...
-        int t = iSetTimer(100, func); // //call it inside main() before iInitialize();
-        ...
-        iInitialize(400, 400, "demooo");
-    }
-    ```
+  int main(int argc, char *argv[])
+  {
+      ...
+      int t = iSetTimer(100, func); // //call it inside main() before iOpenWindow();
+      ...
+      iOpenWindow(400, 400, "iGraphics");
+  }
+  ```
 
 #### `void iPauseTimer(int index)`
 
--   **Description:** Pauses the timer.
--   **Parameters:** `index` of the timer.
--   **Example:** `iPauseTimer(t);`
+- **Description:** Pauses the timer.
+- **Parameters:** `index` of the timer.
+- **Example:** `iPauseTimer(t);`
 
 #### `void iResumeTimer(int index)`
 
--   **Description:** Resumes the timer.
--   **Parameters:** `index` of the timer.
--   **Example:** `iResumeTimer(t);`
+- **Description:** Resumes the timer.
+- **Parameters:** `index` of the timer.
+- **Example:** `iResumeTimer(t);`
 
 #### `void iDelay(int sec)`
 
--   **Description:** Pauses execution for a given duration.
--   **Parameters:** `sec` in seconds.
--   **Example:**
-    ```cpp
-    iDelay(5); // Pauses for 5 seconds
-    ```
+- **Description:** Pauses execution for a given duration.
+- **Parameters:** `sec` in seconds.
+- **Example:**
+  ```cpp
+  iDelay(5); // Pauses for 5 seconds
+  ```
 
 ### 🖱️ Mouse Functions
 
 #### `void iMouse(int button, int state, int mx, int my)`
 
--   **Description:** Called when a mouse button is pressed or released.
--   **Parameters:**
-    -   `button`: Button pressed (GLUT_LEFT_BUTTON, GLUT_RIGHT_BUTTON, GLUT_MIDDLE_BUTTON).
-    -   `state`: State of the button (GLUT_DOWN or GLUT_UP).
-    -   `mx`, `my`: Coordinates of the mouse pointer.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when a mouse button is pressed or released.
+- **Parameters:**
+  - `button`: Button pressed (GLUT_LEFT_BUTTON, GLUT_RIGHT_BUTTON, GLUT_MIDDLE_BUTTON).
+  - `state`: State of the button (GLUT_DOWN or GLUT_UP).
+  - `mx`, `my`: Coordinates of the mouse pointer.
+- **Note:** _This function should be defined in the main file._
 
 #### `void iMouseMove(int mx, int my)`
 
--   **Description:** Called when the mouse moves.
--   **Parameters:** `mx`, `my`: Coordinates of the mouse pointer.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when the mouse moves.
+- **Parameters:** `mx`, `my`: Coordinates of the mouse pointer.
+- **Note:** _This function should be defined in the main file._
 
 #### `void iMouseDrag(int mx, int my)`
 
--   **Description:** Called when the mouse is dragged.
--   **Parameters:** `mx`, `my`: Coordinates of the mouse pointer.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when the mouse is dragged.
+- **Parameters:** `mx`, `my`: Coordinates of the mouse pointer.
+- **Note:** _This function should be defined in the main file._
 
 #### `void iMouseWheel(int dir, int mx, int my)`
 
--   **Description:** Called when the mouse wheel is scrolled.
--   **Parameters:**
-    -   `dir`: Direction of scroll (1 for up, -1 for down).
-    -   `mx`, `my`: Coordinates of the mouse pointer.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when the mouse wheel is scrolled.
+- **Parameters:**
+  - `dir`: Direction of scroll (1 for up, -1 for down).
+  - `mx`, `my`: Coordinates of the mouse pointer.
+- **Note:** _This function should be defined in the main file._
+
+#### `void iShowCursor()`
+
+- **Description:** Shows the mouse cursor.
+- **Parameters:** None
+- **Example:**
+  ```cpp
+  iShowCursor();
+  ```
+
+#### `void iHideCursor()`
+
+- **Description:** Hides the mouse cursor.
+- **Parameters:** None
+- **Example:**
+  ```cpp
+  iHideCursor();
+  ```
 
 ### ⌨️ Keyboard Functions
 
-#### `void iKeyboard(unsigned char key)`
+#### `void iKeyboard(unsigned char key, int state)`
 
--   **Description:** Called when a key is pressed down.
--   **Parameters:** `key` pressed.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when a key is pressed or released or held down.
+- **Parameters:**
+  - `key`: ASCII value of the key pressed.
+  - `state`: State of the key
+    - `GLUT_DOWN`: Key pressed.
+    - `GLUT_UP`: Key released.
+    - `GLUT_HOLD`: Key held down.
+- **Note:** _This function should be defined in the main file._
 
-#### `void iSpecialKeyboard(unsigned char key)`
+#### `void iSpecialKeyboard(unsigned char key, int state)`
 
--   **Description:** Called when a special key is pressed down.
--   **Parameters:** `key` pressed.
--   **Note:** _This function should be defined in the main file._
+- **Description:** Called when a special key is pressed or released or held down.
+- **Parameters:**
+  - `key`: Special key value (e.g., `GLUT_KEY_LEFT`, `GLUT_KEY_RIGHT`, etc.).
+  - `state`: State of the key
+    - `GLUT_DOWN`: Key pressed.
+    - `GLUT_UP`: Key released.
+    - `GLUT_HOLD`: Key held down.
+- **Note:** _This function should be defined in the main file._
 
 #### `bool isKeyPressed(unsigned char key)`
 
--   **Description:** Checks if a key is being pressed (Not yet released).
--   **Parameters:** `key` to check.
--   **Returns:** `true` if pressed, `false` otherwise.
-
--   **Example:**
-    ```cpp
-    if (isKeyPressed('a')) {
-        // 'a' key is pressed
-    }
-    ```
+- **Description:** Checks if a key is being pressed (Not yet released).
+- **Parameters:** `key` to check.
+- **Returns:** `true` if pressed, `false` otherwise.
+- **Example:**
+  ```cpp
+  if (isKeyPressed('a')) {
+      // 'a' key is pressed
+  }
+  ```
 
 #### `bool isSpecialKeyPressed(unsigned char key)`
 
--   **Description:** Checks if a special key is being pressed (Not yet released).
--   **Parameters:** `key` to check.
--   **Returns:** `true` if pressed, `false` otherwise.
--   **Example:**
-    ```cpp
-    if (isSpecialKeyPressed(GLUT_KEY_LEFT)) {
-        // Left arrow key is pressed
-    }
-    ```
+- **Description:** Checks if a special key is being pressed (Not yet released).
+- **Parameters:** `key` to check.
+- **Returns:** `true` if pressed, `false` otherwise.
+- **Example:**
+  ```cpp
+  if (isSpecialKeyPressed(GLUT_KEY_LEFT)) {
+      // Left arrow key is pressed
+  }
+  ```
 
 ### 🔉 Sound Functions
 
@@ -568,363 +684,494 @@ int main(int argc, char *argv[])
 
 #### `int iPlaySound(const char *filename, bool loop = false, int volume = 100)`
 
--   **Description:** Plays a sound from file with optional looping and volume control.
--   **Parameters:**
-    -   `filename`: Path to the sound file.
-    -   `loop`: `true` for continuous play, `false` for one-time play.
-    -   `volume`: Volume level (0-100).
--   **Returns:** Channel where the sound is played.
--   **Note:** You cann't play more than 8 sounds at a time.
--   **Example:**
+- **Description:** Plays a sound from file with optional looping and volume control.
+- **Parameters:**
+  - `filename`: Path to the sound file.
+  - `loop`: `true` for continuous play, `false` for one-time play.
+  - `volume`: Volume level (0-100).
+- **Returns:** Channel where the sound is played.
+- **Note:** You cann't play more than 8 sounds at a time.
+- **Example:**
 
-    ```cpp
-    #include "iSound.h" // Include the sound header
-    ...
-    int main(int argc, char *argv[])
-    {
-        glutInit(&argc, argv);
-        iInitializeSound(); // Need to initialize sound engine
-        iInitialize(600, 250, "Sound Demo");
-        return 0;
-    }
-    ...
-    int channel = iPlaySound("background.wav", true, 80);
-    ```
+  ```cpp
+  #include "iSound.h" // Include the sound header
+  ...
+  int main(int argc, char *argv[])
+  {
+      glutInit(&argc, argv);
+      iInitializeSound(); // Need to initialize sound engine
+      iOpenWindow(600, 250, "Sound Demo");
+      return 0;
+  }
+  ...
+  int channel = iPlaySound("background.wav", true, 80);
+  ```
 
 #### `void iPauseSound(int channel)`
 
--   **Description:** Pauses the sound specified by `channel`.
--   **Parameters:** `channel` of the sound.
--   **Example:**
-    ```cpp
-    iPauseSound(channel);
-    ```
+- **Description:** Pauses the sound specified by `channel`.
+- **Parameters:** `channel` of the sound.
+- **Example:**
+  ```cpp
+  iPauseSound(channel);
+  ```
 
 #### `void iResumeSound(int channel)`
 
--   **Description:** Resumes the sound specified by `channel`.
--   **Parameters:** `channel` of the sound.
--   **Example:**
-    ```cpp
-    iResumeSound(channel);
-    ```
+- **Description:** Resumes the sound specified by `channel`.
+- **Parameters:** `channel` of the sound.
+- **Example:**
+  ```cpp
+  iResumeSound(channel);
+  ```
 
 #### `void iStopSound(int channel)`
 
--   **Description:** Stops the sound specified by `channel`.
--   **Parameters:** `channel` of the sound.
--   **Example:**
-    ```cpp
-    iStopSound(channel);
-    ```
+- **Description:** Stops the sound specified by `channel`.
+- **Parameters:** `channel` of the sound.
+- **Example:**
+  ```cpp
+  iStopSound(channel);
+  ```
 
 #### `void iStopAllSounds()`
 
--   **Description:** Stops all currently playing sounds.
+- **Description:** Stops all currently playing sounds.
 
 #### `void iSetVolume(int channel, int volume)`
 
--   **Description:** Sets the volume for a specific sound.
--   **Parameters:**
-    -   `index`: Index of the sound.
-    -   `volume`: Volume level (0-100).
+- **Description:** Sets the volume for a specific sound.
+- **Parameters:**
+  - `index`: Index of the sound.
+  - `volume`: Volume level (0-100).
 
 #### `void iIncreaseVolume(int channel, int amount)`
 
--   **Description:** Increases the volume of a specific sound by a specified amount.
--   **Parameters:**
-    -   `index`: Index of the sound.
-    -   `amount`: Amount to increase the volume by (0-100).
+- **Description:** Increases the volume of a specific sound by a specified amount.
+- **Parameters:**
+  - `index`: Index of the sound.
+  - `amount`: Amount to increase the volume by (0-100).
 
 #### `void iDecreaseVolume(int channel, int amount)`
 
--   **Description:** Decreases the volume of a specific sound by a specified amount.
--   **Parameters:**
-    -   `index`: Index of the sound.
-    -   `amount`: Amount to decrease the volume by (0-100).
+- **Description:** Decreases the volume of a specific sound by a specified amount.
+- **Parameters:**
+  - `index`: Index of the sound.
+  - `amount`: Amount to decrease the volume by (0-100).
+
+### 🅰️ Text Functions
+
+Custom font rendering is supported using TrueType fonts. `freetype` library is used to render text. The new text functions are available in `iFont.h` and are shown below:
+
+#### `void iShowText(double x, double y, const char *text, const char *fontPath, int fontSize = 48)`
+
+- **Description:** Displays a string on screen using TrueType font.
+- **Parameters:**
+  - `x`, `y`: Coordinates of the first character.
+  - `text`: The text to display.
+  - `fontPath`: Path to the TrueType font file (e.g., "assets/fonts/arial.ttf").
+  - `fontSize`: Size of the font (default is 48).
+- **Example:**
+
+  ```cpp
+  #include "iFont.h" // Include the font header
+  ...
+  int main(int argc, char *argv[])
+  {
+      glutInit(&argc, argv);
+      iInitializeFont(); // Need to initialize freeType library
+      iOpenWindow(600, 250, "Text Demo");
+      return 0;
+  }
+  ...
+  iShowText(50, 60, "This is a text", "assets/fonts/arial.ttf", 48);
+  ```
 
 ### 🖼️ Image Functions
 
 #### `void iShowImage(int x, int y, const char *filename)`
 
--   **Description:** Displays an image at specified coordinates.
--   **Parameters:**
+- **Description:** Displays an image at specified coordinates.
+- **Parameters:**
 
-    -   `x`, `y`: Coordinates where the image will be displayed.
-    -   `filename`: Path to the image file.
+  - `x`, `y`: Coordinates where the image will be displayed.
+  - `filename`: Path to the image file.
 
--   **Example:**
-    ```cpp
-    iShowImage(100, 200, "image.png");
-    ```
+- **Example:**
+  ```cpp
+  iShowImage(100, 200, "image.png");
+  ```
 
 #### `bool iLoadImage(Image* img, const char filename[])`
 
--   **Description:** Loads an image from file. Supports multiple image formats (BMP, PNG, JPG, GIF) with the help of the stb_image library.
+- **Description:** Loads an image from file. Supports multiple image formats (BMP, PNG, JPG, GIF) with the help of the stb_image library.
 
--   **Parameters:**
-    -   `img`: Pointer to an `Image` structure.
-    -   `filename`: Path to the image file.
--   **Returns:** `true` if successful, `false` otherwise.
--   **Example:**
-    ```cpp
-    Image img;
-    if (iLoadImage(&img, "image.png")) {
-        // Image loaded successfully
-    } else {
-        // Failed to load image
-    }
-    ```
--   **Image Structure**
-    ```cpp
-    typedef struct
-    {
-        unsigned char *data;
-        int width, height, channels;
-    } Image;
-    ```
+- **Parameters:**
+
+  - `img`: Pointer to an `Image` structure.
+  - `filename`: Path to the image file.
+  <!-- - `ignoreColor`: Color to be ignored (default is -1, which means no color is ignored). If set to `0xRRGGBB`, it will ignore the color `RRGGBB` while loading the image (e.g., `0xFF0000` for red). -->
+
+- **Returns:** `true` if successful, `false` otherwise.
+- **Example:**
+  ```cpp
+  Image img;
+  if (iLoadImage(&img, "image.png")) {
+      // Image loaded successfully
+  } else {
+      // Failed to load image
+  }
+  ```
+- **Image Structure**
+  ```cpp
+  typedef struct
+  {
+      unsigned char *data;
+      int width, height, channels;
+      GLuint textureID; // OpenGL texture ID
+  } Image;
+  ```
 
 #### `void iShowLoadedImage(int x, int y, Image* img)`
 
--   **Description:** Displays an already loaded image at specified coordinates.
--   **Parameters:**
+- **Description:** Displays an already loaded image at specified coordinates. Image should be loaded using `iLoadImage`.
+- **Parameters:**
 
-    -   `x`, `y`: Coordinates where the image will be displayed.
-    -   `img`: Pointer to the loaded `Image` structure.
+  - `x`, `y`: Coordinates where the image will be displayed.
+  - `img`: Pointer to the loaded `Image` structure.
 
--   **Example:**
+- **Example:**
 
-    ```cpp
-    Image img;
-    iLoadImage(&img, "image.png");
-    iShowImage(100, 200, &img);
-    ```
+  ```cpp
+  Image img;
+  iLoadImage(&img, "image.png");
+  iShowLoadedImage(100, 200, &img);
+  ```
 
 #### `void iScaleImage(Image* img, double scale)`
 
--   **Description:** Scales the image by a specified factor.
--   **Parameters:**
+- **Description:** Scales the image by a specified factor.
+- **Parameters:**
 
-    -   `img`: Pointer to the loaded `Image` structure.
-    -   `scale`: Scaling factor (e.g., 2.0 for double size).
+  - `img`: Pointer to the loaded `Image` structure.
+  - `scale`: Scaling factor (e.g., 2.0 for double size).
 
--   **Example:** `iScaleImage(&img, 2.0);`
+- **Example:** `iScaleImage(&img, 2.0);`
 
 #### `void iResizeImage(Image* img, int width, int height)`
 
--   **Description:** Resizes the image to specified dimensions.
--   **Parameters:**
-    -   `img`: Pointer to the loaded `Image` structure.
-    -   `width`: New width of the image.
-    -   `height`: New height of the image.
--   **Example:**
+- **Description:** Resizes the image to specified dimensions.
+- **Parameters:**
+  - `img`: Pointer to the loaded `Image` structure.
+  - `width`: New width of the image.
+  - `height`: New height of the image.
+- **Example:**
 
-    ```cpp
-    iResizeImage(&img, 200, 100); // Resize to 200x100 pixels
-    ```
+  ```cpp
+  iResizeImage(&img, 200, 100); // Resize to 200x100 pixels
+  ```
 
 #### `void iMirrorImage(Image* img, MirrorState state)`
 
--   **Description:** Mirrors the image either horizontally or vertically.
--   **Parameters:**
+- **Description:** Mirrors the image either horizontally or vertically.
+- **Parameters:**
 
-    -   `img`: Pointer to the loaded `Image` structure.
-    -   `state`: `HORIZONTAL` or `VERTICAL`. Here, MirrorState is an enum.
+  - `img`: Pointer to the loaded `Image` structure.
+  - `state`: `HORIZONTAL` or `VERTICAL`. Here, MirrorState is an enum.
 
--   **Example:**
+- **Example:**
 
-    ```cpp
-    iMirrorImage(&img, HORIZONTAL); // Mirror horizontally
-    ```
+  ```cpp
+  iMirrorImage(&img, HORIZONTAL); // Mirror horizontally
+  ```
 
-#### `void iWrapImage(Image* img, int dx)`
+#### `void iWrapImage(Image* img, int dx = 0, int dy = 0)`
 
--   **Description:** Wraps the image around the window by `dx` pixels. This function is useful for creating infinite scrolling backgrounds.:
--   **Parameters:**
-    -   `img`: Pointer to the loaded `Image` structure.
-    -   `dx`: Number of pixels to wrap around.
-        -   A positive value of `dx` shifts the image to the right.
-        -   A negative value of `dx` shifts the image to the left.
--   **Example:**
+- **Description:** Wraps the image around the screen by `dx` pixels horizontally and `dy` pixels vertically. This function is useful for creating infinite scrolling backgrounds.
+- **Parameters:**
+  - `img`: Pointer to the loaded `Image` structure.
+  - `dx`: Horizontal shift in pixels (default is 0).
+    - A positive value of `dx` shifts the image to the right.
+    - A negative value of `dx` shifts the image to the left.
+  - `dy`: Vertical shift in pixels (default is 0).
+    - A positive value of `dy` shifts the image down.
+    - A negative value of `dy` shifts the image up.
+- **Example:**
 
-    ```cpp
-    iWrapImage(&img, 50); // Wrap the image by 50 pixels to the right
-    iWrapImage(&img, -50); // Wrap the image by 50 pixels to the left
-    ```
+  ```cpp
+  iWrapImage(&img, 50); // Wrap the image by 50 pixels to the right
+  iWrapImage(&img, -50); // Wrap the image by 50 pixels to the left
+  iWrapImage(&img, 0, 30); // Wrap the image by 30 pixels down
+  iWrapImage(&img, 0, -30); // Wrap the image by 30 pixels up
+  ```
 
 #### `void iFreeImage(Image* img)`
 
--   **Description:** Frees the memory allocated for the image.
+- **Description:** Frees the memory allocated for the image.
+
+<!-- SVG FUnctions -->
+
+<!-- ### 📊 SVG Functions
+
+#### `void iShowSVG(int x, int y, const char *filename, double scale = 1.0, MirrorState mirror = NO_MIRROR)`
+
+- **Description:** Displays an SVG image at specified coordinates.
+- **Parameters:**
+  - `x`, `y`: Coordinates where the SVG will be displayed.
+  - `filename`: Path to the SVG file.
+  - `scale`: Scaling factor (default is 1.0).
+  - `mirror`: Mirror state (default is `NO_MIRROR`).
+- **Example:**
+  ```cpp
+  iShowSVG(100, 200, "image.svg", 1.5, HORIZONTAL);
+  ```
+
+#### `bool iLoadSVG(SVG *svg, const char *filename, double scale = 1.0)`
+
+- **Description:** Loads an SVG image from file.
+- **Parameters:**
+  - `svg`: Pointer to an `SVG` structure.
+  - `filename`: Path to the SVG file.
+  - `scale`: Scaling factor (default is 1.0).
+  - **Returns:** `true` if successful, `false` otherwise.
+  - **Example:**
+  ```cpp
+  Image svg;
+  if (iLoadSVG(&svg, "image.svg", 1.5)) {
+      // SVG loaded successfully
+  } else {
+      // Failed to load SVG
+  }
+  ```
+
+#### `void iShowLoadedSVG(int x, int y, Image *svg, MirrorState mirror = NO_MIRROR)`
+
+- **Description:** Displays an already loaded SVG image at specified coordinates.
+- **Parameters:**
+  - `x`, `y`: Coordinates where the SVG will be displayed.
+  - `svg`: Pointer to the loaded svg image.
+  - `mirror`: Mirror state (default is `NO_MIRROR`).
+- **Example:**
+  ```cpp
+  Image svg;
+  iLoadSVG(&svg, "image.svg", 1.5);
+  iShowLoadedSVG(100, 200, &svg);
+  ``` -->
 
 ### 🧩 Sprite Functions
 
 Free sprite resources: [https://craftpix.net/freebies/](https://craftpix.net/freebies/)\\
 Online sprite cutter: [https://ezgif.com/sprite-cutter](https://ezgif.com/sprite-cutter)
 
-#### `void iInitSprite(Sprite *s, int ignoreColor = -1)`
+#### `void iInitSprite(Sprite *s)`
 
--   **Description:** Initializes a sprite structure.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `ignoreColor`: Color to be ignored. The ignored part will be transparent.
-        -   `-1` to read the whole image
-        -   `0xRRGGBB` to ignore the color `RRGGBB` while loading the image (e.g., `0xFF0000` for red).
--   **Example:**
-    ```cpp
-    Sprite s;
-    iInitSprite(&s, 0xFFFFFF); // Initialize sprite and ignore white color
-    ```
--   **Sprite Structure**
-    ```cpp
-    typedef struct
-    {
-        int x, y;
-        int currentFrame;
-        ....
-    } Sprite;
-    ```
+- **Description:** Initializes a sprite structure.
+- **Parameters:**
+
+  - `s`: Pointer to a `Sprite` structure.
+
+- **Example:**
+  ```cpp
+  Sprite s;
+  iInitSprite(&s); // Initialize sprite and ignore white color
+  ```
+- **Sprite Structure**
+  ```cpp
+  typedef struct
+  {
+      int x, y;
+      int currentFrame;
+      ....
+  } Sprite;
+  ```
 
 #### `void iLoadFramesFromFolder(Image *frames, const char *folderPath)`
 
--   **Description:** Loads frames from a folder containing multiple images.
--   **Parameters:**
-    -   `frames`: Pointer to an array of `Image` structures.
-    -   `folderPath`: Path to the folder containing images.
--   **Example:**
-    ```cpp
-    Image frames[10];
-    iLoadFramesFromFolder(frames, "sprites/"); // Load images from a folder and ignore no color
-    ```
+- **Description:** Loads frames from a folder containing multiple images.
+- **Parameters:**
+
+  - `frames`: Pointer to an array of `Image` structures.
+  - `folderPath`: Path to the folder containing images.
+
+- **Example:**
+  ```cpp
+  Image frames[10];
+  iLoadFramesFromFolder(frames, "sprites/"); // Load images from a folder and ignore no color
+  ```
 
 #### `void iLoadFramesFromSheet(Image *frames, const char *filename, int rows, int cols)`
 
--   **Description:** Loads frames from a sprite sheet.
--   **Parameters:**
+- **Description:** Loads frames from a sprite sheet.
+- **Parameters:**
 
-    -   `frames`: Pointer to an array of `Image` structures.
-    -   `filename`: Path to the sprite sheet image.
-    -   `rows`: Number of rows in the sprite sheet.
-    -   `cols`: Number of columns in the sprite sheet.
+  - `frames`: Pointer to an array of `Image` structures.
+  - `filename`: Path to the sprite sheet image.
+  - `rows`: Number of rows in the sprite sheet.
+  - `cols`: Number of columns in the sprite sheet.
 
--   **Example:**
-    ```cpp
-    Image frames[16];
-    iLoadFramesFromSheet(frames, "spritesheet.png", 4, 4); // Load images frames a sprite sheet with 4 rows and 4 columns
-    ```
+- **Example:**
+  ```cpp
+  Image frames[16];
+  iLoadFramesFromSheet(frames, "spritesheet.png", 4, 4); // Load images frames a sprite sheet with 4 rows and 4 columns
+  ```
 
 #### `void iChangeSpriteFrames(Sprite *s, const Image *frames, int totalFrames)`
 
--   **Description:** Changes the frames of a sprite.
--   **Parameters:**
+- **Description:** Changes the frames of a sprite.
+- **Parameters:**
 
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `frames`: Array of `Image` structures representing the new frames.
-    -   `totalFrames`: Number of frames in the array.
+  - `s`: Pointer to a `Sprite` structure.
+  - `frames`: Array of `Image` structures representing the new frames.
+  - `totalFrames`: Number of frames in the array.
 
--   **Example:**
-    ```cpp
-    Image frames[10];
-    iLoadFramesFromFolder(frames,"sprites/"); // Load images from a folder
-    Sprite s;
-    iInitSprite(&s, -1); // Initialize sprite
-    iChangeSpriteFrames(&s, frames, 4); // Change the frames of the sprite
-    ```
+- **Example:**
+  ```cpp
+  Image frames[10];
+  iLoadFramesFromFolder(frames,"sprites/"); // Load images from a folder
+  Sprite s;
+  iInitSprite(&s); // Initialize sprite
+  iChangeSpriteFrames(&s, frames, 4); // Change the frames of the sprite
+  ```
 
 #### `void iSetSpritePosition(Sprite* s, int x, int y)`
 
--   **Description:** Sets the position of the sprite.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `x`, `y`: New coordinates for the sprite.
--   **Example:**
-    ```cpp
-    iSetSpritePosition(&s, 100, 200); // Set sprite position to (100, 200)
-    ```
+- **Description:** Sets the position of the sprite.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+  - `x`, `y`: New coordinates for the sprite.
+- **Example:**
+  ```cpp
+  iSetSpritePosition(&s, 100, 200); // Set sprite position to (100, 200)
+  ```
 
 #### `void iShowSprite(Sprite* s)`
 
--   **Description:** Displays the sprite on the screen.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
+- **Description:** Displays the sprite on the screen.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
 
 #### `void iAnimateSprite(Sprite* s)`
 
--   **Description:** Animates the sprite by cycling through its frames.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
--   **Example:**
-    ```cpp
-    iAnimateSprite(&s); // Animate the sprite
-    ```
+- **Description:** Animates the sprite by cycling through its frames.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+- **Example:**
+  ```cpp
+  iAnimateSprite(&s); // Animate the sprite
+  ```
 
 #### `void iScaleSprite(Sprite* s, double scale)`
 
--   **Description:** Scales the sprite by a specified factor.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `scale`: Scaling factor (e.g., 2.0 for double size).
+- **Description:** Scales the sprite by a specified factor.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+  - `scale`: Scaling factor (e.g., 2.0 for double size).
 
 #### `void iResizeSprite(Sprite* s, int width, int height)`
 
--   **Description:** Resizes the sprite to specified dimensions.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `width`: New width of the sprite.
-    -   `height`: New height of the sprite.
+- **Description:** Resizes the sprite to specified dimensions.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+  - `width`: New width of the sprite.
+  - `height`: New height of the sprite.
 
 #### `void iMirrorSprite(Sprite* s, MirrorState state)`
 
--   **Description:** Mirrors the sprite either horizontally or vertically.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
-    -   `state`: `HORIZONTAL` or `VERTICAL`.
+- **Description:** Mirrors the sprite either horizontally or vertically.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+  - `state`: `HORIZONTAL` or `VERTICAL`.
+
+#### `void iRotateSprite(Sprite* s, double x, double y, double degree)`
+
+- **Description:** Rotates the sprite around a point `(x, y)` by a specified angle in degrees.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
+  - `x`, `y`: Coordinates of the point to rotate around.
+  - `degree`: Angle in degrees to rotate.
+- **Example:**
+  ```cpp
+  iRotateSprite(&s, 100, 100, 45); // Rotate sprite around point (100, 100) by 45 degrees
+  ```
 
 #### `void iFreeSprite(Sprite* s)`
 
--   **Description:** Frees the memory allocated for the sprite.
--   **Parameters:**
-    -   `s`: Pointer to a `Sprite` structure.
+- **Description:** Frees the memory allocated for the sprite.
+- **Parameters:**
+  - `s`: Pointer to a `Sprite` structure.
 
 #### `int iCheckCollision(Sprite* s1, Sprite* s2)`
 
--   **Description:** Checks for pixel-level collision between two sprites. If the bounding box of two images do not overlap, this has a time complexity of `O(1)`. Otherwise, it has a time complexity of `O(wh)`, where `w` and `h` are the width and height of the overlapping area of the two images.
+- **Description:** Checks for pixel-level collision between two sprites. If the bounding box of two images do not overlap, this has a time complexity of `O(1)`. Otherwise, it has a time complexity of `O(wh)`, where `w` and `h` are the width and height of the overlapping area of the two images.
 
--   **Parameters:**
-    -   `s1`: Pointer to the first `Sprite` structure.
-    -   `s2`: Pointer to the second `Sprite` structure.
--   **Returns:** `1` if collision is detected, `0` otherwise.
--   **Example:**
-    ```cpp
-    Sprite s1, s2;
-    ....
-    if (iCheckCollision(&s1, &s2)) {
-        // Collision detected
-    }
-    ```
+- **Parameters:**
+  - `s1`: Pointer to the first `Sprite` structure.
+  - `s2`: Pointer to the second `Sprite` structure.
+- **Returns:** `1` if collision is detected, `0` otherwise.
+- **Example:**
+  ```cpp
+  Sprite s1, s2;
+  ....
+  if (iCheckCollision(&s1, &s2)) {
+      // Collision detected
+  }
+  ```
+
+#### `int iGetVisiblePixelsCount(Sprite* s1)`
+
+- **Description:** Counts the number of visible pixels in a sprite. This is useful for collision detection.
+- **Parameters:**
+  - `s1`: Pointer to the `Sprite` structure.
+  - **Returns:** Number of visible pixels in the sprite.
+- **Example:**
+- ```cpp
+  Sprite s1;
+  ...
+  int visiblePixels = iGetVisiblePixelsCount(&s1);
+  ```
 
 ### 🧰 Miscellaneous
 
 #### `void iToggleFullscreen()`
 
--   **Description:** Toggles between fullscreen and windowed mode.
+- **Description:** Toggles between fullscreen and windowed mode.
 
 ---
 
-## ✨ Contributors
+<!-- ## ✨ Contributors
 
 | [![Shahriar Nirjon](https://github.com/nirjon.png?size=100)](https://github.com/nirjon) | [![Mahir Labib Dihan](https://github.com/mahirlabibdihan.png?size=100)](https://github.com/mahirlabibdihan) | [![Anwarul Bashar Shuaib](https://github.com/shuaibw.png?size=100)](https://github.com/shuaibw) | [![Ashrafur Rahman Khan](https://github.com/risenfromashes.png?size=100)](https://github.com/risenfromashes) |
 | :-------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
 |                                   **Shahriar Nirjon**                                   |                                            **Mahir Labib Dihan**                                            |                                    **Anwarul Bashar Shuaib**                                    |                                         **Md. Ashrafur Rahman Khan**                                         |
 
----
+--- -->
 
 ## 📄 License
 
 This library is for educational purposes and is typically used in academic or hobbyist OpenGL projects.
 
-<!--
 ## 🙏 Acknowledgements
 
--   [Extended iGraphics by Ash](https://github.com/risenfromashes/Curves/) - Implementation of cross-platform iGraphics library with additional features.
--   [irrKlang](https://github.com/jonas2602/irrKlang) - The sound engine used for sound playback.
--   [freeglut](https://freeglut.sourceforge.net/) - The OpenGL Utility Toolkit. -->
+- [Shahriar Nirjon](https://github.com/nirjon) - Original iGraphics library
+- [Ashrafur Rahman Khan](https://github.com/risenfromashes) - Linux Support, Freeglut, SDL2 sound engine, Transparent Color, Mouse passive motion.
+- [Anwarul Bashar Shuaib](https://github.com/shuaibw) - Image resize, mirror, wrap, and collision detection functionality
+- [Wasif Jalal](https://github.com/wjalal) - SDL2, Game Mode
+
+<!-- ## 🙏 Acknowledgements
+
+
+- [Extended iGraphics by Ash](https://github.com/risenfromashes/Curves/) - Implementation of cross-platform iGraphics library with additional features.
+- [irrKlang](https://github.com/jonas2602/irrKlang) - The sound engine used for sound playback.
+- [freeglut](https://freeglut.sourceforge.net/) - The OpenGL Utility Toolkit. -->
+
+<!-- Resources -->
+
+## 📚 Libraries
+
+- [SDL2](https://www.libsdl.org/): v2.32.8
+  - [SDL2_Mixer](https://www.libsdl.org/projects/SDL_mixer/): v2.8.1
+- [Freetype](https://gnuwin32.sourceforge.net/packages/freetype.htm): v2.3.5
+  - [zlib](https://gnuwin32.sourceforge.net/packages/zlib.htm): v1.2.3
+- [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h): v2.30
+  - [stb_image_resize](https://github.com/nothings/stb/blob/master/stb_image_resize_test/old_image_resize.h): v0.96
+- [Nano SVG](https://github.com/memononen/nanosvg)
