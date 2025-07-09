@@ -5,7 +5,7 @@ using namespace std;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
-
+int expx1,expy1;
 int bgSoundIdx = -1;
 int mbgSoundIdx = -1;
 int s_on_off = 0;
@@ -109,7 +109,7 @@ void populate_space_images()
         sprintf(shoot1[i], "assets/images/sprites/Spaceship/Charge_2.png", i);
     }
     shoot_image = shoot1[0];
-      for (int i = 0; i < 1; i++)
+      for (int i = 0; i < 10; i++)
     {
         sprintf(exp11[i], "assets/images/sprites/enemy/explosions/Ship1_Explosion/Ship1_Explosion_%03d.png", i);
     }
@@ -143,18 +143,20 @@ void checkBulletEnemyCollision() {
         if (bullet_on_off[i] == 1) {
             
             if (iCheckCollision(&bullet_sprites[i], &ship1)) {
+                expx1=enem_x1;
+                expy1=enem_y1;
                 bullet_on_off[i] = 0;
                 ship1_health--;
                 if(ship1_health<=0){
-               /* iInitSprite(&exp11, -1);
+                /*iInitSprite(&exp11, -1);
 	            iLoadFramesFromFolder(exp_1, "assets/images/sprites/enemy/explosions/Ship1_Explosion/");
 	            iChangeSpriteFrames(&exp11, exp_1, 10);
 	            iSetSpritePosition(&exp11,enem_x1,enem_y1);
                 iAnimateSprite(&exp11);
                 iShowSprite(&exp11);*/
-                iShowImage(enem_x1,enem_x2,exp1);
+                iShowImage(enem_x1,enem_y1,exp1);
                 shi1=0;
-                ship1_health=1;
+               
                  }
                   // Deactivate bullet
                 // Handle enemy hit (reduce health, play sound, etc.)
@@ -208,7 +210,7 @@ void update_enemy(){
             iAnimateSprite(&ship2);
             if(shi1==0){
                 enem_x1=1300;
-                shi1=1;
+               
             }
             
             if(enem_x1<-100){
@@ -267,6 +269,10 @@ void explosion(){
       if(ship1_health==0){
         exp1=exp11[exp1_idx];
         exp1_idx=(exp1_idx+1)%10;
+        if(exp1_idx==0){
+             shi1=0;
+            ship1_health=1;
+        }
     }
 }
 
@@ -359,7 +365,7 @@ void iKeyboard(unsigned char key, int state)
     iCloseWindow();
     break;
     case 'w':
-        space_y += 15;
+        space_y += 25;
         if (space_y > 580)
         {
             space_y = 580;
@@ -382,7 +388,7 @@ void iKeyboard(unsigned char key, int state)
         state = MOVE;
         break;
     case 's':
-        space_y -= 15;
+        space_y -= 25;
         if (space_y < 0)
         {
             space_y = 0;
@@ -463,6 +469,7 @@ int main(int argc, char *argv[])
     iSetTimer(100, update_space);
     iSetTimer(50, shoot);
     iSetTimer(100,update_enemy);
+    
     //iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
 
