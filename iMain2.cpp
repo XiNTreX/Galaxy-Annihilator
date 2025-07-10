@@ -7,6 +7,9 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+int homeidx =-1, mainidx=-1;
+int sound_check = 0;
+
 int gamestate = 1;
 Image home, diff, mainbg;
 int homesound, mainsound;
@@ -259,14 +262,28 @@ void checkBulletEnemyCollision() {
 
 void homepage() {
     iShowLoadedImage(0, 0, &home);
+    
 }
 
 void difficulty() {
     iShowLoadedImage(0, 0, &diff);
+    
 }
-
+void sound_manage()
+{
+    if (gamestate == 1)
+    {
+        homeidx =iPlaySound("assets/sounds/menubg.wav", true, 70);
+    }
+    else if (gamestate == 21)
+    {
+        iPauseSound(homeidx);
+        mainidx = iPlaySound("assets/sounds/mainbg.wav", true, 70);
+    }
+}
 void mainpage1() {
     iShowLoadedImage(0, 0, &mainbg);
+    
     iWrapImage(&mainbg, -2);
     iShowSprite(&spaceship);
     if (enem1_active || enem1_exploding) iShowSprite(&enem1);
@@ -300,6 +317,7 @@ void moveBullets() {
 
 void iDraw() {
     iClear();
+    
     switch (gamestate) {
         case 1:
             homepage();
@@ -332,7 +350,8 @@ void iMouse(int button, int state, int mx, int my) {
                 break;
             case 2:
                 if ((430 <= mx && mx <= 780) && (325 <= my && my <= 380))
-                    gamestate = 21;
+                    {gamestate = 21;
+                        sound_manage();}
                 else if ((430 <= mx && mx <= 780) && (225 <= my && my <= 280))
                     gamestate = 22;
                 else if ((430 <= mx && mx <= 780) && (120 <= my && my <= 180))
@@ -402,6 +421,34 @@ void iKeyboard(unsigned char key, int state) {
                 ship_state = IDLE;
                 iChangeSpriteFrames(&spaceship, idle, 1);
                 break;
+            case 'm':
+                if (sound_check == 0)
+                {
+                    if (gamestate == 1 || gamestate == 2)
+                    {
+                        iPauseSound(homeidx);
+                        sound_check++;
+                    }
+                    if (gamestate == 21)
+                    {
+                        iPauseSound(mainidx);
+                        sound_check++;
+                    }
+                }
+                else
+                {
+                    if (gamestate == 1 || gamestate == 2)
+                    {
+                        iResumeSound(homeidx);
+                        sound_check = 0;
+                    }
+                    if (gamestate == 21)
+                    {
+                        iResumeSound(mainidx);
+                        sound_check = 0;
+                    }
+                }
+                
         }
     }
 }
@@ -421,6 +468,8 @@ int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     iInitializeSound();
     loadresources();
+    iInitializeSound();
+	sound_manage();
     iSetTimer(50, moveBullets); // Update bullets every 50ms
     iSetTimer(50, moveSpaceship); // Update spaceship movement every 50ms
     iSetTimer(200, updateAnimation); // Update animation every 200ms
@@ -429,5 +478,6 @@ int main(int argc, char *argv[]) {
     iSetTimer(50, updateEnemy2); // Update enemy2 every 50ms
     iSetTimer(50, updateEnemy2Explosion); // Update explosion every 50ms
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
+    
     return 0;
 }
