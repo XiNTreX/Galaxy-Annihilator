@@ -147,7 +147,7 @@ void moveSpaceship() {
     }
 }
 
-void updateEnemy1() {
+void updateEnemy() {
     if (gamestate == 21) { // Only update in main game
         // Respawn logic
         if (!enem1_active && !enem1_exploding) {
@@ -169,26 +169,6 @@ void updateEnemy1() {
                 enem1_active = false; // Deactivate until next respawn
             }
         }
-    }
-}
-
-void updateEnemy1Explosion() {
-    if (enem1_exploding) {
-        enem1_exp_idx++; // Advance frame
-        iChangeSpriteFrames(&enem1, e1exp, 10);
-        iSetSpritePosition(&enem1, enem1_x, enem1_y);
-        iAnimateSprite(&enem1);
-        if (enem1_exp_idx >= 10) { // Animation complete
-            enem1_exploding = false;
-            enem1_active = false; // Vanish after explosion
-            enem1_exp_idx = 0;
-        }
-    }
-}
-
-void updateEnemy2() {
-    if (gamestate == 21) { // Only update in main game
-        // Respawn logic
         if (!enem2_active && !enem2_exploding) {
             enem2_respawn_timer += 50; // Increment timer (50ms per call)
             if (enem2_respawn_timer >= 1000) { // Respawn every 1 second
@@ -211,8 +191,19 @@ void updateEnemy2() {
     }
 }
 
-void updateEnemy2Explosion() {
-    if (enem2_exploding) {
+void updateEnemyExplosion() {
+    if (enem1_exploding) {
+        enem1_exp_idx++; // Advance frame
+        iChangeSpriteFrames(&enem1, e1exp, 10);
+        iSetSpritePosition(&enem1, enem1_x, enem1_y);
+        iAnimateSprite(&enem1);
+        if (enem1_exp_idx >= 10) { // Animation complete
+            enem1_exploding = false;
+            enem1_active = false; // Vanish after explosion
+            enem1_exp_idx = 0;
+        }
+    }
+     if (enem2_exploding) {
         enem2_exp_idx++; // Advance frame
         iChangeSpriteFrames(&enem2, e2exp, 12);
         iSetSpritePosition(&enem2, enem2_x, enem2_y);
@@ -224,6 +215,8 @@ void updateEnemy2Explosion() {
         }
     }
 }
+
+
 
 void checkBulletEnemyCollision() {
     if (gamestate == 21) {
@@ -273,12 +266,16 @@ void sound_manage()
 {
     if (gamestate == 1)
     {
+
         homeidx =iPlaySound("assets/sounds/menubg.wav", true, 70);
+        
+
     }
     else if (gamestate == 21)
     {
         iPauseSound(homeidx);
         mainidx = iPlaySound("assets/sounds/mainbg.wav", true, 70);
+        
     }
 }
 void mainpage1() {
@@ -293,13 +290,7 @@ void mainpage1() {
             iShowSprite(&bullet_sprites[i]);
         }
     }
-    // Debug text
-    /*char debug[200];
-    sprintf(debug, "enem1: active=%d, expl=%d, idx=%d, x=%d, y=%d | enem2: active=%d, expl=%d, idx=%d, x=%d, y=%d", 
-            enem1_active, enem1_exploding, enem1_exp_idx, enem1_x, enem1_y,
-            enem2_active, enem2_exploding, enem2_exp_idx, enem2_x, enem2_y);
-    iSetColor(255, 255, 255);
-    iText(10, 650, debug, GLUT_BITMAP_HELVETICA_18);*/
+    
     checkBulletEnemyCollision();
 }
 
@@ -402,6 +393,7 @@ void iKeyboard(unsigned char key, int state) {
                     }
                 }
                 break;
+            
         }
     } else if (state == GLUT_UP) {
         switch (key) {
@@ -453,14 +445,13 @@ void iKeyboard(unsigned char key, int state) {
     }
 }
 
-void iSpecialKeyboard(unsigned char key, int) {
-    switch (key) {
-        case GLUT_KEY_END:
-            if (gamestate == 2 || gamestate == 3 || gamestate == 4 || gamestate == 5)
-                gamestate = 1;
-            else if (gamestate == 21 || gamestate == 22 || gamestate == 23)
-                gamestate = 2;
-            break;
+void iSpecialKeyboard(unsigned char key, int state) {
+    
+    switch (key)
+    {
+    
+    default:
+        break;
     }
 }
 
@@ -468,15 +459,14 @@ int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     iInitializeSound();
     loadresources();
-    iInitializeSound();
+    
 	sound_manage();
     iSetTimer(50, moveBullets); // Update bullets every 50ms
     iSetTimer(50, moveSpaceship); // Update spaceship movement every 50ms
     iSetTimer(200, updateAnimation); // Update animation every 200ms
-    iSetTimer(50, updateEnemy1); // Update enemy1 every 50ms
-    iSetTimer(50, updateEnemy1Explosion); // Update explosion every 50ms
-    iSetTimer(50, updateEnemy2); // Update enemy2 every 50ms
-    iSetTimer(50, updateEnemy2Explosion); // Update explosion every 50ms
+    iSetTimer(50, updateEnemy); // Update enemy1 every 50ms
+    iSetTimer(50, updateEnemyExplosion); // Update explosion every 50ms
+    
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     
     return 0;
