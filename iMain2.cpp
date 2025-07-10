@@ -7,6 +7,9 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+int homeidx =-1, mainidx=-1;
+int sound_check = 0;
+
 int gamestate = 1;
 Image home, diff, mainbg;
 int homesound, mainsound;
@@ -25,11 +28,12 @@ int enem1_x = 1200, enem1_y = 500; // enem1 position
 int enem1_respawn_timer = 0; // Timer for respawn (ms)
 bool enem1_exploding = false; // Tracks if enem1 is exploding
 int enem1_exp_idx = 0; // Explosion animation index
-bool enem2_active = false; // Tracks if enem1 is active
-int enem2_x = 1200, enem2_y = 100; // enem1 position
+bool enem2_active = false; // Tracks if enem2 is active
+int enem2_x = 1200, enem2_y = 100; // enem2 position
 int enem2_respawn_timer = 0; // Timer for respawn (ms)
-bool enem2_exploding = false; // Tracks if enem1 is exploding
+bool enem2_exploding = false; // Tracks if enem2 is exploding
 int enem2_exp_idx = 0; // Explosion animation index
+bool key_w = false, key_a = false, key_s = false, key_d = false; // Track key states
 
 void loadresources() {
     // Load images
@@ -49,8 +53,6 @@ void loadresources() {
     iLoadImage(&e2idle[0], "assets/images/sprites/enemy/Ship2/Ship2.png");
     iLoadFramesFromFolder(e2exp, "assets/images/sprites/enemy/explosions/Ship2_Explosion/");
 
-
-
     // Initialize spaceship sprite
     iInitSprite(&spaceship);
     iChangeSpriteFrames(&spaceship, idle, 1);
@@ -66,17 +68,14 @@ void loadresources() {
 
     // Initialize enemy sprites
     iInitSprite(&enem1);
-    //iScaleSprite(&enem1, 1.7);
+    //iScaleSprite(&enem1, 1.7);//
     iChangeSpriteFrames(&enem1, e1idle, 1);
     iSetSpritePosition(&enem1, enem1_x, enem1_y);
     
-
     iInitSprite(&enem2);
-    
     iScaleSprite(&enem2, 1.7);
     iChangeSpriteFrames(&enem2, e2idle, 1);
     iSetSpritePosition(&enem2, enem2_x, enem2_y);
-
 
     iInitSprite(&enem3);
     iInitSprite(&enem4);
@@ -95,6 +94,8 @@ void cleanup() {
     for (int i = 0; i < 4; i++) iFreeImage(&s_shoot[i]);
     for (int i = 0; i < 10; i++) iFreeImage(&e1exp[i]);
     iFreeImage(&e1idle[0]);
+    for (int i = 0; i < 12; i++) iFreeImage(&e2exp[i]);
+    iFreeImage(&e2idle[0]);
     iFreeSprite(&spaceship);
     for (int i = 0; i < MAX_BULLETS; i++) iFreeSprite(&bullet_sprites[i]);
     iFreeSprite(&enem1);
@@ -116,24 +117,53 @@ void updateAnimation() {
     }
 }
 
+void moveSpaceship() {
+    if (gamestate == 21) { // Only move in main game
+        if (key_w) {
+            move_ud += 25;
+            if (move_ud >= 555) move_ud = 555;
+        }
+        if (key_s) {
+            move_ud -= 25;
+            if (move_ud < -48) move_ud = -48;
+        }
+        if (key_a) {
+            move_lf -= 25;
+            if (move_lf < 0) move_lf = 0;
+            ship_state = BOOST;
+            iChangeSpriteFrames(&spaceship, s_boost, 6);
+        }
+        if (key_d) {
+            move_lf += 25;
+            if (move_lf > 1010) move_lf = 1010;
+            ship_state = BOOST;
+            iChangeSpriteFrames(&spaceship, s_boost, 6);
+        }
+        if (!key_a && !key_d && ship_state == BOOST) {
+            ship_state = IDLE;
+            iChangeSpriteFrames(&spaceship, idle, 1);
+        }
+        iSetSpritePosition(&spaceship, move_lf, move_ud);
+    }
+}
+
 void updateEnemy1() {
     if (gamestate == 21) { // Only update in main game
         // Respawn logic
         if (!enem1_active && !enem1_exploding) {
             enem1_respawn_timer += 50; // Increment timer (50ms per call)
-            if (enem1_respawn_timer >= 1000) { // Respawn every 5 seconds
+            if (enem1_respawn_timer >= 1000) { // Respawn every 1 second
                 enem1_active = true;
                 enem1_x = 1200; // Start at right edge
                 enem1_y = 500; // Fixed y-position
                 iSetSpritePosition(&enem1, enem1_x, enem1_y);
                 iChangeSpriteFrames(&enem1, e1idle, 1);
-                
                 enem1_respawn_timer = 0; // Reset timer
             }
         }
         // Movement logic
         if (enem1_active && !enem1_exploding) {
-            enem1_x -= 10; // Move left at 5 pixels per 50ms
+            enem1_x -= 10; // Move left at 10 pixels per 50ms
             iSetSpritePosition(&enem1, enem1_x, enem1_y);
             if (enem1_x < -100) { // Off-screen
                 enem1_active = false; // Deactivate until next respawn
@@ -155,31 +185,31 @@ void updateEnemy1Explosion() {
         }
     }
 }
+
 void updateEnemy2() {
     if (gamestate == 21) { // Only update in main game
         // Respawn logic
         if (!enem2_active && !enem2_exploding) {
             enem2_respawn_timer += 50; // Increment timer (50ms per call)
-            if (enem2_respawn_timer >= 1000) { // Respawn every 5 seconds
+            if (enem2_respawn_timer >= 1000) { // Respawn every 1 second
                 enem2_active = true;
                 enem2_x = 1200; // Start at right edge
                 enem2_y = 100; // Fixed y-position
                 iSetSpritePosition(&enem2, enem2_x, enem2_y);
                 iChangeSpriteFrames(&enem2, e2idle, 1);
-                
                 enem2_respawn_timer = 0; // Reset timer
             }
         }
         // Movement logic
         if (enem2_active && !enem2_exploding) {
-            enem2_x -= 10; // Move left at 5 pixels per 50ms
+            enem2_x -= 10; // Move left at 10 pixels per 50ms
             iSetSpritePosition(&enem2, enem2_x, enem2_y);
             if (enem2_x < -100) { // Off-screen
                 enem2_active = false; // Deactivate until next respawn
             }
         }
-    }
-}
+         
+}}
 
 void updateEnemy2Explosion() {
     if (enem2_exploding) {
@@ -196,30 +226,34 @@ void updateEnemy2Explosion() {
 }
 
 void checkBulletEnemyCollision() {
-    if (gamestate == 21 && enem1_active && !enem1_exploding) {
-        for (int i = 0; i < MAX_BULLETS; i++) {
-            if (bullet_active[i]) {
-                if (iCheckCollision(&bullet_sprites[i], &enem1)) {
-                    bullet_active[i] = 0; // Deactivate bullet
-                    enem1_active = false; // Stop enemy movement
-                    enem1_exploding = true; // Start explosion
-                    enem1_exp_idx = 0; // Reset animation
-                    iChangeSpriteFrames(&enem1, e1exp, 10);
-                    iSetSpritePosition(&enem1, enem1_x, 10);
+    if (gamestate == 21) {
+        // Check enem1 collisions
+        if (enem1_active && !enem1_exploding) {
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    if (iCheckCollision(&bullet_sprites[i], &enem1)) {
+                        bullet_active[i] = 0; // Deactivate bullet
+                        enem1_active = false; // Stop enemy movement
+                        enem1_exploding = true; // Start explosion
+                        enem1_exp_idx = 0; // Reset animation
+                        iChangeSpriteFrames(&enem1, e1exp, 10);
+                        iSetSpritePosition(&enem1, enem1_x, enem1_y); // Fixed bug
+                    }
                 }
             }
         }
-    }
-    if (gamestate == 21 && enem2_active && !enem2_exploding) {
-        for (int i = 0; i < MAX_BULLETS; i++) {
-            if (bullet_active[i]) {
-                if (iCheckCollision(&bullet_sprites[i], &enem2)) {
-                    bullet_active[i] = 0; // Deactivate bullet
-                    enem2_active = false; // Stop enemy movement
-                    enem2_exploding = true; // Start explosion
-                    enem2_exp_idx = 0; // Reset animation
-                    iChangeSpriteFrames(&enem2, e2exp, 10);
-                    iSetSpritePosition(&enem2, enem2_x, enem2_y);
+        // Check enem2 collisions
+        if (enem2_active && !enem2_exploding) {
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    if (iCheckCollision(&bullet_sprites[i], &enem2)) {
+                        bullet_active[i] = 0; // Deactivate bullet
+                        enem2_active = false; // Stop enemy movement
+                        enem2_exploding = true; // Start explosion
+                        enem2_exp_idx = 0; // Reset animation
+                        iChangeSpriteFrames(&enem2, e2exp, 12); // Fixed to 12 frames
+                        iSetSpritePosition(&enem2, enem2_x, enem2_y);
+                    }
                 }
             }
         }
@@ -228,24 +262,44 @@ void checkBulletEnemyCollision() {
 
 void homepage() {
     iShowLoadedImage(0, 0, &home);
+    
 }
 
 void difficulty() {
     iShowLoadedImage(0, 0, &diff);
+    
 }
-
+void sound_manage()
+{
+    if (gamestate == 1)
+    {
+        homeidx =iPlaySound("assets/sounds/menubg.wav", true, 70);
+    }
+    else if (gamestate == 21)
+    {
+        iPauseSound(homeidx);
+        mainidx = iPlaySound("assets/sounds/mainbg.wav", true, 70);
+    }
+}
 void mainpage1() {
     iShowLoadedImage(0, 0, &mainbg);
+    
     iWrapImage(&mainbg, -2);
     iShowSprite(&spaceship);
     if (enem1_active || enem1_exploding) iShowSprite(&enem1);
-    if (enem2_active || enem2_exploding) iShowSprite(&enem2); // Show enem1 or its explosion
+    if (enem2_active || enem2_exploding) iShowSprite(&enem2);
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullet_active[i]) {
             iShowSprite(&bullet_sprites[i]);
         }
     }
-    
+    // Debug text
+    /*char debug[200];
+    sprintf(debug, "enem1: active=%d, expl=%d, idx=%d, x=%d, y=%d | enem2: active=%d, expl=%d, idx=%d, x=%d, y=%d", 
+            enem1_active, enem1_exploding, enem1_exp_idx, enem1_x, enem1_y,
+            enem2_active, enem2_exploding, enem2_exp_idx, enem2_x, enem2_y);
+    iSetColor(255, 255, 255);
+    iText(10, 650, debug, GLUT_BITMAP_HELVETICA_18);*/
     checkBulletEnemyCollision();
 }
 
@@ -263,6 +317,7 @@ void moveBullets() {
 
 void iDraw() {
     iClear();
+    
     switch (gamestate) {
         case 1:
             homepage();
@@ -295,7 +350,8 @@ void iMouse(int button, int state, int mx, int my) {
                 break;
             case 2:
                 if ((430 <= mx && mx <= 780) && (325 <= my && my <= 380))
-                    gamestate = 21;
+                    {gamestate = 21;
+                        sound_manage();}
                 else if ((430 <= mx && mx <= 780) && (225 <= my && my <= 280))
                     gamestate = 22;
                 else if ((430 <= mx && mx <= 780) && (120 <= my && my <= 180))
@@ -315,30 +371,16 @@ void iKeyboard(unsigned char key, int state) {
                 iCloseWindow();
                 break;
             case 'w':
-                move_ud += 25;
-                if (move_ud >= 555) move_ud = 555;
-                iSetSpritePosition(&spaceship, move_lf, move_ud);
+                key_w = true;
                 break;
             case 's':
-                move_ud -= 25;
-                if (move_ud < -48) move_ud = -48;
-                iSetSpritePosition(&spaceship, move_lf, move_ud);
+                key_s = true;
                 break;
             case 'a':
-                move_lf -= 25;
-                if (move_lf < 0) move_lf = 0;
-                iSetSpritePosition(&spaceship, move_lf, move_ud);
-                ship_state = BOOST;
-                iChangeSpriteFrames(&spaceship, s_boost, 6);
-                iAnimateSprite(&spaceship);
+                key_a = true;
                 break;
             case 'd':
-                move_lf += 25;
-                if (move_lf > 1010) move_lf = 1010;
-                iSetSpritePosition(&spaceship, move_lf, move_ud);
-                ship_state = BOOST;
-                iChangeSpriteFrames(&spaceship, s_boost, 6);
-                iAnimateSprite(&spaceship);
+                key_d = true;
                 break;
             case 'p':
                 ship_state = SHOOT;
@@ -361,9 +403,53 @@ void iKeyboard(unsigned char key, int state) {
                 }
                 break;
         }
-    } else if (state == GLUT_UP && (key == 'd' || key == 'a' || key == 'p')) {
-        ship_state = IDLE;
-        iChangeSpriteFrames(&spaceship, idle, 1);
+    } else if (state == GLUT_UP) {
+        switch (key) {
+            case 'w':
+                key_w = false;
+                break;
+            case 's':
+                key_s = false;
+                break;
+            case 'a':
+                key_a = false;
+                break;
+            case 'd':
+                key_d = false;
+                break;
+            case 'p':
+                ship_state = IDLE;
+                iChangeSpriteFrames(&spaceship, idle, 1);
+                break;
+            case 'm':
+                if (sound_check == 0)
+                {
+                    if (gamestate == 1 || gamestate == 2)
+                    {
+                        iPauseSound(homeidx);
+                        sound_check++;
+                    }
+                    if (gamestate == 21)
+                    {
+                        iPauseSound(mainidx);
+                        sound_check++;
+                    }
+                }
+                else
+                {
+                    if (gamestate == 1 || gamestate == 2)
+                    {
+                        iResumeSound(homeidx);
+                        sound_check = 0;
+                    }
+                    if (gamestate == 21)
+                    {
+                        iResumeSound(mainidx);
+                        sound_check = 0;
+                    }
+                }
+                
+        }
     }
 }
 
@@ -382,12 +468,16 @@ int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     iInitializeSound();
     loadresources();
+    iInitializeSound();
+	sound_manage();
     iSetTimer(50, moveBullets); // Update bullets every 50ms
+    iSetTimer(50, moveSpaceship); // Update spaceship movement every 50ms
     iSetTimer(200, updateAnimation); // Update animation every 200ms
     iSetTimer(50, updateEnemy1); // Update enemy1 every 50ms
-    iSetTimer(50, updateEnemy1Explosion); // Update explosion every 100ms
-    iSetTimer(50, updateEnemy2); // Update enemy1 every 50ms
-    iSetTimer(50, updateEnemy2Explosion);
+    iSetTimer(50, updateEnemy1Explosion); // Update explosion every 50ms
+    iSetTimer(50, updateEnemy2); // Update enemy2 every 50ms
+    iSetTimer(50, updateEnemy2Explosion); // Update explosion every 50ms
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
+    
     return 0;
 }
