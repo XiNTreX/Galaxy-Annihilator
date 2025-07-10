@@ -465,10 +465,7 @@ int main(int argc, char *argv[])
     iSetTimer(100, update_space);
     iSetTimer(50, shoot);
     iSetTimer(100,update_enemy);
-    //iInitialize(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
-    iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
+    iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SpaceShooter");
 
     return 0;
 }
-
-
