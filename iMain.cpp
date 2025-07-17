@@ -7,21 +7,31 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+int bonushpx = 700, bonusrocketx = 500, bonusshieldx = 1000;
+int bonushpy = 1500, bonusrockety = -1800, bonusshieldy = 800;
+bool bonusrocket = false, bonusshield = false, bonushp = false;
+Image score;
+int scorenumber=0;
+char scoretext[100];
+int health = 3;
+int invincibility_end_time = 0;
 int homeidx =-1, mainidx=-1;
 int sound_check = 0;
 int fullscreen = 0;
 int gamestate = 1;
-Image home, diff, mainbg;
+Image home, diff, mainbg,hp1,hp2,hp3,hpbonus[1],rocket[1],shield[1];
+Sprite bo_roc,bo_shi,bo_hp;
 int homesound, mainsound;
 Sprite met;
-Sprite spaceship, enem1, enem2, enem3, enem4, enem5, enem6, bullet_sprites[MAX_BULLETS], ebulsprite[MAX_BULLETS];
+Sprite spaceship, enem1, enem2, enem3, enem4, enem5, enem6, bullet_sprites[MAX_BULLETS], ebulsprite[MAX_BULLETS], e2bulsprite[MAX_BULLETS], e3bulsprite[MAX_BULLETS], e4bulsprite[MAX_BULLETS], e5bulsprite[MAX_BULLETS], e6bulsprite[MAX_BULLETS];
 Image s_boost[6], s_exp[7], s_shoot[4], idle[1], bullet_img[1], mete[1];
 Image e1exp[10], e1idle[1];
 Image e2exp[12], e2idle[1];
-Image e1bul[1];
+Image e1bul[1],e2bul[1],e3bul[1],e4bul[1],e5bul[1],e6bul[1];
 int move_ud = 280, move_lf = 0;
 int bullet_x[MAX_BULLETS], bullet_y[MAX_BULLETS], bullet_active[MAX_BULLETS];
-int ebullet_x[MAX_BULLETS], ebullet_y[MAX_BULLETS], ebullet_active[MAX_BULLETS];
+int e2bullet_x[MAX_BULLETS], e2bullet_y[MAX_BULLETS];
+int ebullet_x[MAX_BULLETS], ebullet_y[MAX_BULLETS], ebullet_active[MAX_BULLETS],e2bullet_active[MAX_BULLETS],e3bullet_active[MAX_BULLETS],e4bullet_active[MAX_BULLETS],e5bullet_active[MAX_BULLETS],e6bullet_active[MAX_BULLETS];
 int enem1_fire_timer = 0; // Timer for enem1 firing
 int enem2_fire_timer = 0; // Timer for enem2 firing
 enum { IDLE, BOOST, SHOOT, EXP };
@@ -49,6 +59,7 @@ int enem1hp=1, enem2hp=2, enem3hp=3, enem4hp=4, enem5hp=5;
 char des[7][100]; int a=0;
 
 void loadresources() {
+    sprintf(scoretext, "%d", scorenumber);
     // Load images
     iLoadImage(&home, "assets/images/homepage_w_menu.png");
     iLoadImage(&diff, "assets/images/difficulty.png");
@@ -84,9 +95,60 @@ void loadresources() {
     iLoadImage(&e1bul[0], "assets/images/sprites/enemy/Shots/Shot1/enembullet.png");
     for (int i = 0; i < MAX_BULLETS; i++) {
         iInitSprite(&ebulsprite[i]);
+        iScaleSprite(&ebulsprite[i], 1.7); // Scale down enemy bullets
         iChangeSpriteFrames(&ebulsprite[i], e1bul, 1);
         ebullet_active[i] = 0; // Initially inactive
     }
+    iLoadImage(&e2bul[0], "assets/images/sprites/enemy/Shots/Shot2/shot2_asset.png");
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        iInitSprite(&e2bulsprite[i]);
+        iScaleSprite(&e2bulsprite[i], 1.3); // Scale down enemy bullets
+        iChangeSpriteFrames(&e2bulsprite[i], e2bul, 1);
+        e2bullet_active[i] = 0; // Initially inactive
+    }
+      iLoadImage(&e3bul[0], "assets/images/sprites/enemy/Shots/Shot3/shot3_asset.png");
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        iInitSprite(&e3bulsprite[i]);
+        iScaleSprite(&e3bulsprite[i], 1.7); // Scale down enemy bullets
+        iChangeSpriteFrames(&e3bulsprite[i], e3bul, 1);
+        e3bullet_active[i] = 0; // Initially inactive
+    }
+      iLoadImage(&e4bul[0], "assets/images/sprites/enemy/Shots/Shot4/shot4_3.png");
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        iInitSprite(&e4bulsprite[i]);
+        iScaleSprite(&e4bulsprite[i], 1.7); // Scale down enemy bullets
+        iChangeSpriteFrames(&e4bulsprite[i], e4bul, 1);
+        e4bullet_active[i] = 0; // Initially inactive
+    }
+      iLoadImage(&e5bul[0], "assets/images/sprites/enemy/Shots/Shot5/shot5_4.png");
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        iInitSprite(&e5bulsprite[i]);
+        iScaleSprite(&e5bulsprite[i], 1.7); // Scale down enemy bullets
+        iChangeSpriteFrames(&e5bulsprite[i], e5bul, 1);
+        e5bullet_active[i] = 0; // Initially inactive
+    }
+     //health
+     iLoadImage(&hp1, "assets/images/hp/full.png");
+     iLoadImage(&hp2, "assets/images/hp/medium.png");
+     iLoadImage(&hp3, "assets/images/hp/low.png");
+     iScaleImage(&hp1,0.2);
+     iScaleImage(&hp2,0.2);
+     iScaleImage(&hp3,0.2);
+     iLoadImage(&score, "assets/images/score.png");
+     iScaleImage(&score,0.085);
+     //bonus items
+     iInitSprite(&bo_roc);
+    iLoadFramesFromFolder(rocket, "assets/images/rocket/");
+    iChangeSpriteFrames(&bo_roc, rocket, 1);
+    iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
+    iInitSprite(&bo_shi);
+    iLoadFramesFromFolder(shield, "assets/images/shield/");
+    iChangeSpriteFrames(&bo_shi, shield, 1);
+    iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
+    iInitSprite(&bo_hp);
+    iLoadFramesFromFolder(hpbonus, "assets/images/health/");
+    iChangeSpriteFrames(&bo_hp, hpbonus, 1);
+    iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
     // Initialize enemy sprites
     iInitSprite(&enem1);
     iChangeSpriteFrames(&enem1, e1idle, 1);
@@ -117,7 +179,6 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_exp, 7);
     }
 }
-
 void moveSpaceship() {
     if (gamestate == 21) { // Only move in main game
         if (key_w) {
@@ -165,11 +226,12 @@ void updatemeteor() {
     iSetSpritePosition(&met, metx, mety);   // Update sprite position
     double rotationCenterX = metx + 45.0;
     double rotationCenterY = mety + 39.3;
-    meteorRotationAngle += 15.0;  // Rotate 15 degrees per frame
+    meteorRotationAngle += 10.0;  // Rotate 15 degrees per frame
     if (meteorRotationAngle >= 360.0) {
         meteorRotationAngle = 0.0;
     }
     iRotateSprite(&met, rotationCenterX, rotationCenterY, meteorRotationAngle);
+    
 }
 
 void enem_shoot() {
@@ -179,7 +241,7 @@ void enem_shoot() {
             for (int i = 0; i < MAX_BULLETS; i++) {
                 if (!ebullet_active[i]) {
                     ebullet_x[i] = enem1_x - 10; // Start left of enemy
-                    ebullet_y[i] = enem1_y + 50; // Approximate center of enemy
+                    ebullet_y[i] = enem1_y + 40; // Approximate center of enemy
                     iSetSpritePosition(&ebulsprite[i], ebullet_x[i], ebullet_y[i]);
                     ebullet_active[i] = 1;
                     break;
@@ -189,11 +251,11 @@ void enem_shoot() {
         // Fire for enem2
         if (enem2_active && !enem2_exploding) {
             for (int i = 0; i < MAX_BULLETS; i++) {
-                if (!ebullet_active[i]) {
-                    ebullet_x[i] = enem2_x - 10; // Start left of enemy
-                    ebullet_y[i] = enem2_y + 90; // Approximate center of enemy
-                    iSetSpritePosition(&ebulsprite[i], ebullet_x[i], ebullet_y[i]);
-                    ebullet_active[i] = 1;
+                if (!e2bullet_active[i]) {
+                    e2bullet_x[i] = enem2_x - 10; // Start left of enemy
+                    e2bullet_y[i] = enem2_y + 70; // Approximate center of enemy
+                    iSetSpritePosition(&e2bulsprite[i], e2bullet_x[i], e2bullet_y[i]);
+                    e2bullet_active[i] = 1;
                     break;
                 }
             }
@@ -257,6 +319,8 @@ void updateEnemy() {
             }
         }
     }
+    scorenumber++;
+     sprintf(scoretext, "%d", scorenumber);
 }
 
 void updateEnemyExplosion() {
@@ -327,6 +391,8 @@ void checkBulletEnemyCollision() {
                         bullet_active[i] = 0; // Deactivate bullet
                         enem1_active = false; // Stop enemy movement
                         enem1_exploding = true; // Start explosion
+                         scorenumber+=100;
+                        sprintf(scoretext, "%d", scorenumber);
                         enem1_exp_idx = 0; // Reset animation
                         iChangeSpriteFrames(&enem1, e1exp, 10);
                         iSetSpritePosition(&enem1, enem1_x, enem1_y);
@@ -344,6 +410,8 @@ void checkBulletEnemyCollision() {
                         if (enem2hp <= 0) {
                             enem2_active = false; // Stop enemy movement
                             enem2_exploding = true; // Start explosion
+                            scorenumber+=100;
+                            sprintf(scoretext, "%d", scorenumber);
                             enem2_exp_idx = 0; // Reset animation
                             iChangeSpriteFrames(&enem2, e2exp, 12);
                             iSetSpritePosition(&enem2, enem2_x, enem2_y);
@@ -355,8 +423,44 @@ void checkBulletEnemyCollision() {
     }
 }
 
+void enemBulletCollision() {
+    if (gamestate == 21) {
+        int current_time = glutGet(GLUT_ELAPSED_TIME);
+        if (current_time < invincibility_end_time) {
+            return;
+        }
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i])) {
+                ebullet_active[i] = 0;
+                health--;
+                invincibility_end_time = current_time + 500; // 500ms invincibility
+                if (health <= 0) {
+                    shipexp = true;
+                    ship_state = EXP;
+                    exp_idx = 0;
+                }
+                return; // Only one hit per frame
+            }
+        }
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i])) {
+                e2bullet_active[i] = 0;
+                health--;
+                invincibility_end_time = current_time + 500;
+                if (health <= 0) {
+                    shipexp = true;
+                    ship_state = EXP;
+                    exp_idx = 0;
+                }
+                return;
+            }
+        }
+    }
+}
 void homepage() {
     iShowLoadedImage(0, 0, &home);
+    scorenumber=0;
+    sprintf(scoretext, "%d", scorenumber);
 }
 
 void difficulty() {
@@ -377,6 +481,7 @@ void mainpage1() {
     iShowLoadedImage(0, 0, &mainbg);
     iWrapImage(&mainbg, -2);
     iShowSprite(&spaceship);
+    iShowLoadedImage2(1060,615,&score);
     if (enem1_active || enem1_exploding) iShowSprite(&enem1);
     if (enem2_active || enem2_exploding) iShowSprite(&enem2);
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -389,11 +494,29 @@ void mainpage1() {
             iShowSprite(&ebulsprite[i]);
         }
     }
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (e2bullet_active[i]) {
+            iShowSprite(&e2bulsprite[i]);
+        }
+    }
+    
+    iText(1150, 650, scoretext, GLUT_BITMAP_TIMES_ROMAN_24);
     iShowSprite(&met);
     checkBulletEnemyCollision();
     checkEnemSpaceCollision();
+    enemBulletCollision();  
+    iShowSpeed(1110,20);
+    if(health==3){
+       // iShowImage(0,0, "assets/images/hp/full.png");
+       iShowLoadedImage(0, -70, &hp1);
+    }else if(health==2){
+       // iShowImage(0,0, "assets/images/hp/medium.png");
+       iShowLoadedImage(0,-70 , &hp2);  
+    }else if(health==1){
+       // iShowImage(0,0, "assets/images/hp/low.png");
+       iShowLoadedImage(0, -70, &hp3);
+    }
 }
-
 void moveBullets() {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullet_active[i]) {
@@ -410,6 +533,15 @@ void moveBullets() {
             iSetSpritePosition(&ebulsprite[i], ebullet_x[i], ebullet_y[i]);
             if (ebullet_x[i] < 0) {
                 ebullet_active[i] = 0; // Deactivate if off-screen
+            }
+        }
+    }
+     for (int i = 0; i < MAX_BULLETS; i++) {
+        if (e2bullet_active[i]) {
+            e2bullet_x[i] -= 30; // Move left (enemy bullets)
+            iSetSpritePosition(&e2bulsprite[i], e2bullet_x[i], e2bullet_y[i]);
+            if (e2bullet_x[i] < 0) {
+                e2bullet_active[i] = 0; // Deactivate if off-screen
             }
         }
     }
