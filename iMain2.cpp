@@ -15,9 +15,11 @@ Image home, diff, mainbg;
 int homesound, mainsound;
 Sprite met;
 Sprite spaceship, enem1, enem2, enem3, enem4, enem5, enem6, bullet_sprites[MAX_BULLETS];
-Image s_boost[6], s_exp[21], s_shoot[4], idle[1], bullet_img[1],mete[1];
+Image s_boost[6], s_exp[7], s_shoot[4], idle[1], bullet_img[1],mete[1];
 Image e1exp[10], e1idle[1];
 Image e2exp[12], e2idle[1];
+Image e1bul[5];
+Sprite e1buls;
 int move_ud = 280, move_lf = 0;
 int bullet_x[MAX_BULLETS], bullet_y[MAX_BULLETS], bullet_active[MAX_BULLETS];
 enum { IDLE, BOOST, SHOOT ,EXP};
@@ -25,9 +27,11 @@ int ship_state = IDLE;
 int boost_idx = 0;
 int shoot_idx = 0;
 int exp_idx=0;
-int metx=550,mety=750;
+int metx=550,mety=1000;
 bool enem1_active = false; // Tracks if enem1 is active
 int enem1_x = 1200, enem1_y = 500; // enem1 position
+int bul1_x=enem1_x-8;
+bool enem1_bul_active = false; // Tracks if enem1 bullet is active
 int enem1_respawn_timer = 0; // Timer for respawn (ms)
 bool enem1_exploding = false; // Tracks if enem1 is exploding
 int enem1_exp_idx = 0; // Explosion animation index
@@ -40,22 +44,30 @@ bool shipexp=false;
 bool meteor=false;
 bool key_w = false, key_a = false, key_s = false, key_d = false; // Track key states
 int enem1hp=1,enem2hp=2,enem3hp=3,enem4hp=4,enem5hp=5;
-char des[21][100];int a=0;
+char des[7][100];int a=0;
 void loadresources() {
     // Load images
     iLoadImage(&home, "assets/images/homepage_w_menu.png");
     iLoadImage(&diff, "assets/images/difficulty.png");
     iLoadImage(&mainbg, "assets/images/mainbg.png");
+    //enemy bullets
+    iInitSprite(&e1buls);
+    iLoadFramesFromFolder(e1bul, "assets/images/sprites/enemy/Shots/Shot1/");
+	iChangeSpriteFrames(&e1buls, e1bul, 5);
+	iSetSpritePosition(&e1buls, enem1_x-8, enem1_y+64);
+    
     //meteor
     iInitSprite(&met);
     iLoadFramesFromFolder(mete, "assets/images/sprites/Meteors/mainmet/");
+    //iLoadImage(&mete[0], "assets/images/sprites/Meteors/mainmet/meteor.png");
     iChangeSpriteFrames(&met,mete,1);
     iSetSpritePosition(&met,metx,mety);
+    iScaleSprite(&met, .3);
     // Load spaceship frames
     iLoadImage(&idle[0], "assets/images/sprites/Spaceship/Idle.png");
     iLoadFramesFromFolder(s_boost, "assets/images/sprites/Spaceship/boost/");
     iLoadFramesFromFolder(s_shoot, "assets/images/sprites/Spaceship/shoot/");
-    //iLoadFramesFromFolder(s_exp, "assets/images/sprites/Spaceship/explosion/");
+    iLoadFramesFromFolder(s_exp, "assets/images/sprites/Spaceship/explosion/");
 
     // Load enemy frames
     iLoadImage(&e1idle[0], "assets/images/sprites/enemy/Ship1/Ship1.png");
@@ -91,11 +103,11 @@ void loadresources() {
     iInitSprite(&enem4);
     iInitSprite(&enem5);
     iInitSprite(&enem6);
-    for (int i = 0; i < 21; i++)
+   /* for (int i = 0; i < 21; i++)
     {
         sprintf(des[i], "assets/images/sprites/Spaceship/explosion/tile%03d.png", i);
         // printf("assets/images/sprites/Golem_2/Idle Blinking/0_Golem_Idle Blinking_%03d.png", i);
-    }
+    }*/
 
 }
 
@@ -106,7 +118,7 @@ void cleanup() {
     iFreeImage(&idle[0]);
     iFreeImage(&bullet_img[0]);
     for (int i = 0; i < 6; i++) iFreeImage(&s_boost[i]);
-    for (int i = 0; i < 21; i++) iFreeImage(&s_exp[i]);
+    for (int i = 0; i < 7; i++) iFreeImage(&s_exp[i]);
     for (int i = 0; i < 4; i++) iFreeImage(&s_shoot[i]);
     for (int i = 0; i < 10; i++) iFreeImage(&e1exp[i]);
     iFreeImage(&e1idle[0]);
@@ -120,8 +132,11 @@ void cleanup() {
     iFreeSprite(&enem4);
     iFreeSprite(&enem5);
     iFreeSprite(&enem6);
+    iFreeSprite(&met);
 }
+void enembull(){
 
+}
 void updateAnimation() {
     if (ship_state == BOOST) {
         boost_idx = (boost_idx + 1) % 6; // Cycle through 6 boost frames
@@ -132,9 +147,9 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
     if(ship_state== EXP && shipexp){
-        //exp_idx=(exp_idx + 1) % 21;//
+        exp_idx=(exp_idx + 1) % 21;//
         exp_idx++;
-     //iChangeSpriteFrames(&spaceship, s_exp, 21);
+     iChangeSpriteFrames(&spaceship, s_exp, 7);
      //iAnimateSprite(&spaceship);
     a=1;
     }
@@ -170,16 +185,36 @@ void moveSpaceship() {
         iSetSpritePosition(&spaceship, move_lf, move_ud);
     }
 }
+double meteorRotationAngle = 0.0;
+int xthik=0;
 void updatemeteor(){
-    metx-=30;
-    mety-=60;
-    if(metx<-50 || mety<-70){
-        meteor=true;
+    metx -= 30;
+    mety -= 30;
+    
+    if(metx < -50 || mety < -70) {
+        metx = 550+xthik;
+        mety = 750;
+        meteor = false;  // Reset the flag after repositioning
+        xthik += 200; // Increment xthik for next repositioning
+        if (xthik > 500) {
+            xthik = 0; // Reset xthik to avoid overflow
+        }
     }
-    if(meteor){
-      metx=550;
-      mety=750;
+    
+    iSetSpritePosition(&met, metx, mety);   // Update sprite position
+    
+    double rotationCenterX = metx + 45.0;
+    double rotationCenterY = mety + 39.3;
+    
+    // INCREMENT the rotation angle each frame
+    meteorRotationAngle += 15.0;  // Rotate 5 degrees per frame
+    
+    // Keep angle within 0-360 range (optional)
+    if(meteorRotationAngle >= 360.0) {
+        meteorRotationAngle = 0.0;
     }
+    
+    iRotateSprite(&met, rotationCenterX, rotationCenterY, meteorRotationAngle);
 }
 void updateEnemy() {
     if (gamestate == 21) { // Only update in main game
@@ -190,9 +225,11 @@ void updateEnemy() {
                 enem1_active = true;
                 enem1_x = 1200; // Start at right edge
                 enem1_y = 500; // Fixed y-position
+               // enem2hp=2;
                 iSetSpritePosition(&enem1, enem1_x, enem1_y);
                 iChangeSpriteFrames(&enem1, e1idle, 1);
                 enem1_respawn_timer = 0; // Reset timer
+
             }
         }
         // Movement logic
@@ -247,6 +284,7 @@ void updateEnemyExplosion() {
             enem2_exploding = false;
             enem2_active = false; // Vanish after explosion
             enem2_exp_idx = 0;
+          
         }
     }
 }
@@ -260,8 +298,33 @@ void checkEnemSpaceCollision(){
              shipexp=true;
             ship_state=EXP;
             exp_idx=0;
-            iChangeSpriteFrames(&spaceship, s_exp, 21);
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            iAnimateSprite(&spaceship);
          
+        }
+        if(iCheckCollision(&spaceship,&enem2)){
+            enem2_active = false;
+            enem2_exploding = true;
+             enem2_exp_idx = 0;
+             iChangeSpriteFrames(&enem2, e2exp, 12);
+             shipexp=true;
+            ship_state=EXP;
+            exp_idx=0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            iAnimateSprite(&spaceship);
+         
+        }
+        if(iCheckCollision(&spaceship,&met)){
+            metx = 550;
+            mety = 750;
+            meteor = true; // Set meteor flag to true
+            //iSetSpritePosition(&met, metx, mety); // Reset meteor position
+          // iAnimateSprite(&met);
+          shipexp=true;
+            ship_state=EXP;
+            exp_idx=0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            iAnimateSprite(&spaceship);
         }
     }
 }
@@ -290,11 +353,13 @@ void checkBulletEnemyCollision() {
                 if (bullet_active[i]) {
                     if (iCheckCollision(&bullet_sprites[i], &enem2)) {
                         bullet_active[i] = 0; // Deactivate bullet
+                        enem2hp--;
+                        if(enem2hp <= 0){
                         enem2_active = false; // Stop enemy movement
                         enem2_exploding = true; // Start explosion
                         enem2_exp_idx = 0; // Reset animation
                         iChangeSpriteFrames(&enem2, e2exp, 12); // Fixed to 12 frames
-                        iSetSpritePosition(&enem2, enem2_x, enem2_y);
+                        iSetSpritePosition(&enem2, enem2_x, enem2_y);}
                     }
                 }
             }
@@ -339,10 +404,12 @@ void mainpage1() {
             iShowSprite(&bullet_sprites[i]);
         }
     }
-    iChangeSpriteFrames(&met,mete,1);
-    iSetSpritePosition(&met,metx,mety);
-    iAnimateSprite(&met);
-    iShowSprite(&met);
+     iShowSprite(&met);
+     iShowSprite(&e1buls);
+    //iChangeSpriteFrames(&met,mete,1);
+   // iSetSpritePosition(&met,metx,mety);
+   // iAnimateSprite(&met);
+   
     if(a==1){
         iShowImage(move_lf,move_ud,des[exp_idx]);
     }
@@ -522,7 +589,7 @@ int main(int argc, char *argv[]) {
     iSetTimer(200, updateAnimation); // Update animation every 200ms
     iSetTimer(50, updateEnemy); // Update enemy1 every 50ms
     iSetTimer(50, updateEnemyExplosion); // Update explosion every 50ms
-    iSetTimer(100,updatemeteor);
+    iSetTimer(225,updatemeteor);//boss ekta,guli ekta
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     
     return 0;
