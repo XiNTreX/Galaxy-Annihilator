@@ -8,6 +8,9 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+bool shield_active=false;int shield_hp=3;
+Image shieldimg[1];Sprite shieldsprt;
+int shieldx, shieldy;
 int bonushpx = 700, bonusrocketx = 500, bonusshieldx = 1000;
 int bonushpy = 1500, bonusrockety = -1800, bonusshieldy = 800;
 bool bonusrocket = false, bonusshield = false, bonushp = false;
@@ -65,6 +68,13 @@ int shield_spawn_timer = 0;
 
 void loadresources() {
     sprintf(scoretext, "%d", scorenumber);
+    //shield
+    iInitSprite(&shieldsprt);
+    iLoadFramesFromFolder(shieldimg,"assets/images/main_shield/");
+    iChangeSpriteFrames(&shieldsprt,shieldimg,1);
+    iScaleSprite(&shieldsprt,0.2);
+    //iSetSpritePosition(&shieldsprt, shieldx, shieldy);
+
     // Load images
     iLoadImage(&home, "assets/images/homepage_w_menu.png");
     iLoadImage(&diff, "assets/images/difficulty.png");
@@ -222,6 +232,12 @@ void moveSpaceship() {
             iChangeSpriteFrames(&spaceship, idle, 1);
         }
         iSetSpritePosition(&spaceship, move_lf, move_ud);
+        if( shield_active) {
+            shieldx = move_lf -5; // Position shield relative to spaceship
+            shieldy = move_ud -5; 
+            iSetSpritePosition(&shieldsprt, shieldx, shieldy);
+           
+        }
     }
 }
 
@@ -255,6 +271,7 @@ void updatemeteor() {
         }
     }
 }
+double hprotangle=0.0,rockrotangle=0.0, shieldrotangle=0.0;
 void updateBonuses() {
     if (gamestate == 21) {
         // Health bonus
@@ -270,6 +287,13 @@ void updateBonuses() {
         if (bonushp) {
             bonushpy -= 10;
             iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
+            double hprotcenx=bonushpx+42;
+            double hprotceny=bonushpy+42;
+            hprotangle+=10;
+            if(hprotangle>=360){
+                hprotangle=0.0;
+            }
+            iRotateSprite(&bo_hp,hprotcenx,hprotceny,hprotangle);
             if (bonushpy < -50) {
                 bonushp = false;
                 hpbonus_spawn_timer = 0;
@@ -288,6 +312,13 @@ void updateBonuses() {
         if (bonusrocket) {
             bonusrockety -= 10;
             iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
+             double rocrotcenx=bonusrocketx+42;
+            double rocrotceny=bonusrockety+42;
+            rockrotangle+=10;
+            if(rockrotangle>=360){
+                rockrotangle=0.0;
+            }
+            iRotateSprite(&bo_roc,rocrotcenx,rocrotceny,rockrotangle);
             if (bonusrockety < -50) {
                 bonusrocket = false;
                 rocket_spawn_timer = 0;
@@ -306,11 +337,20 @@ void updateBonuses() {
         if (bonusshield) {
             bonusshieldy -= 10;
             iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
+             double shirotcenx=bonusshieldx+42;
+            double shirotceny=bonusshieldy+42;
+            shieldrotangle+=10;
+            if(shieldrotangle>=360){
+                shieldrotangle=0.0;
+            }
+            iRotateSprite(&bo_shi,shirotcenx,shirotceny,shieldrotangle);
+            
             if (bonusshieldy < -50) {
                 bonusshield = false;
                 shield_spawn_timer = 0;
             }
         }
+        
     }
 }
 void enem_shoot() {
@@ -434,7 +474,7 @@ void updateEnemyExplosion() {
         }
     }
 }
-
+double mainshieldrotangle = 0.0;
 void checkEnemSpaceCollision() {
     if (gamestate == 21) {
         if (iCheckCollision(&spaceship, &enem1)) {
@@ -483,6 +523,17 @@ void checkEnemSpaceCollision() {
             
         }
         if (bonusshield && iCheckCollision(&spaceship, &bo_shi)) {
+            shield_active = true;
+            shieldx = move_lf -5; // Position shield relative to spaceship
+            shieldy = move_ud -5; 
+            iSetSpritePosition(&shieldsprt, shieldx, shieldy);
+           /* double mainshieldrotcenx=shieldx+102.4;
+            double mainshieldrotceny=shieldy+102.4;
+            mainshieldrotangle+=10;
+            if(mainshieldrotangle>=360){
+                mainshieldrotangle=0.0;
+            }
+            iRotateSprite(&shieldsprt,mainshieldrotcenx,mainshieldrotceny,mainshieldrotangle);*/ 
             bonusshield = false;
             shield_spawn_timer = 0;
             
@@ -554,7 +605,15 @@ void enemBulletCollision() {
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i])) {
                 ebullet_active[i] = 0;
-                health--;
+                if(!shield_active){
+                health--;}else{
+                    shield_hp--;
+                    if(shield_hp<=0){
+                        shield_active = false;
+                        shield_spawn_timer = 0;
+                        shield_hp=3;
+                    }
+                }
                 invincibility_end_time = current_time + 500; // 500ms invincibility
                 if (health <= 0) {
                     shipexp = true;
@@ -567,7 +626,15 @@ void enemBulletCollision() {
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i])) {
                 e2bullet_active[i] = 0;
-                health--;
+                if(!shield_active){
+                health--;}else{
+                    shield_hp--;
+                    if(shield_hp<=0){
+                        shield_active = false;
+                        shield_spawn_timer = 0;
+                        shield_hp=3;
+                    }
+                }
                 invincibility_end_time = current_time + 500;
                 if (health <= 0) {
                     shipexp = true;
@@ -602,6 +669,9 @@ void sound_manage() {
 void mainpage1() {
     iShowLoadedImage(0, 0, &mainbg);
     iWrapImage(&mainbg, -2);
+    if(shield_active) {
+        iShowSprite(&shieldsprt);
+    }   
     iShowSprite(&spaceship);
     iShowLoadedImage2(1060,615,&score);
     if (enem1_active || enem1_exploding) iShowSprite(&enem1);
@@ -625,6 +695,7 @@ void mainpage1() {
     iText(1150, 650, scoretext, GLUT_BITMAP_TIMES_ROMAN_24);
     if (meteor)iShowSprite(&met);
     if (bonushp) iShowSprite(&bo_hp);
+                                                                                     
     checkBulletEnemyCollision();
     checkEnemSpaceCollision();
     enemBulletCollision();  
