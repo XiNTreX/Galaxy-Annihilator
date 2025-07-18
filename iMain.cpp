@@ -1,6 +1,7 @@
 #include "iGraphics.h"
 #include <iostream>
 #include "iSound.h"
+#include <stdlib.h>
 using namespace std;
 
 #define SCREEN_WIDTH 1200
@@ -11,6 +12,7 @@ int bonushpx = 700, bonusrocketx = 500, bonusshieldx = 1000;
 int bonushpy = 1500, bonusrockety = -1800, bonusshieldy = 800;
 bool bonusrocket = false, bonusshield = false, bonushp = false;
 Image score;
+int meteor_spawn_timer = 0; 
 int scorenumber=0;
 char scoretext[100];
 int health = 3;
@@ -55,8 +57,11 @@ int enem2_exp_idx = 0; // Explosion animation index
 bool shipexp=false;
 bool meteor=false;
 bool key_w = false, key_a = false, key_s = false, key_d = false; // Track key states
-int enem1hp=1, enem2hp=2, enem3hp=3, enem4hp=4, enem5hp=5;
+int enem1hp=1, enem2hp=4, enem3hp=3, enem4hp=4, enem5hp=5;
 char des[7][100]; int a=0;
+int hpbonus_spawn_timer = 0; // Timer for hpbonus spawning
+int rocket_spawn_timer = 0; // Timer for rocket bonus spawning
+int shield_spawn_timer = 0;
 
 void loadresources() {
     sprintf(scoretext, "%d", scorenumber);
@@ -91,7 +96,7 @@ void loadresources() {
         iChangeSpriteFrames(&bullet_sprites[i], bullet_img, 1);
         bullet_active[i] = 0; // Initially inactive
     }
-    // Enemy bullet (using same image as spaceship)
+    // Enemy bullet 
     iLoadImage(&e1bul[0], "assets/images/sprites/enemy/Shots/Shot1/enembullet.png");
     for (int i = 0; i < MAX_BULLETS; i++) {
         iInitSprite(&ebulsprite[i]);
@@ -139,14 +144,18 @@ void loadresources() {
      //bonus items
      iInitSprite(&bo_roc);
     iLoadFramesFromFolder(rocket, "assets/images/rocket/");
+    iScaleSprite(&bo_roc, .28);
     iChangeSpriteFrames(&bo_roc, rocket, 1);
     iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
     iInitSprite(&bo_shi);
     iLoadFramesFromFolder(shield, "assets/images/shield/");
+    iScaleSprite(&bo_shi, .28);
     iChangeSpriteFrames(&bo_shi, shield, 1);
     iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
     iInitSprite(&bo_hp);
+
     iLoadFramesFromFolder(hpbonus, "assets/images/health/");
+    iScaleSprite(&bo_hp, .28);
     iChangeSpriteFrames(&bo_hp, hpbonus, 1);
     iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
     // Initialize enemy sprites
@@ -162,7 +171,14 @@ void loadresources() {
     iInitSprite(&enem5);
     iInitSprite(&enem6);
 }
-
+int getNonOverlappingXPosition(int existing_x1, int existing_x2, int min_distance) {
+    int new_x;
+    do {
+        new_x = rand() % (SCREEN_WIDTH - 50);
+    } while ((existing_x1 != -1 && abs(new_x - existing_x1) < min_distance) ||
+             (existing_x2 != -1 && abs(new_x - existing_x2) < min_distance));
+    return new_x;
+}
 void updateAnimation() {
     if (ship_state == BOOST) {
         boost_idx = (boost_idx + 1) % 6; // Cycle through 6 boost frames
@@ -212,28 +228,91 @@ void moveSpaceship() {
 double meteorRotationAngle = 0.0;
 int xthik=0;
 void updatemeteor() {
-    metx -= 30;
-    mety -= 30;
-    if (metx < -50 || mety < -70) {
-        metx = 550 + xthik;
-        mety = 750;
-        meteor = false;  // Reset the flag after repositioning
-        xthik += 200; // Increment xthik for next repositioning
-        if (xthik > 500) {
-            xthik = 0; // Reset xthik to avoid overflow
+    if (gamestate == 21) {
+        meteor_spawn_timer += 50; // Increment timer every 50ms
+        if (!meteor && meteor_spawn_timer >= 5000) { // Spawn every 5 seconds
+            meteor = true;
+            metx = 100 + ( rand() % (SCREEN_WIDTH - 50)); // Random x-position, adjusted for meteor width
+            mety = SCREEN_HEIGHT + 50; // Start above screen
+            iSetSpritePosition(&met, metx, mety);
+            meteor_spawn_timer = 0; // Reset timer
+        }
+        if (meteor) {
+            metx -= 15; // Move diagonally left and down
+            mety -= 15;
+            iSetSpritePosition(&met, metx, mety);
+            double rotationCenterX = metx + 45.0;
+            double rotationCenterY = mety + 39.3;
+            meteorRotationAngle += 10.0; // Rotate 10 degrees per frame
+            if (meteorRotationAngle >= 360.0) {
+                meteorRotationAngle = 0.0;
+            }
+            iRotateSprite(&met, rotationCenterX, rotationCenterY, meteorRotationAngle);
+            if (metx < -50 || mety < -70) { // Off-screen
+                meteor = false;
+                meteor_spawn_timer = 0; // Reset timer for next spawn
+            }
         }
     }
-    iSetSpritePosition(&met, metx, mety);   // Update sprite position
-    double rotationCenterX = metx + 45.0;
-    double rotationCenterY = mety + 39.3;
-    meteorRotationAngle += 10.0;  // Rotate 15 degrees per frame
-    if (meteorRotationAngle >= 360.0) {
-        meteorRotationAngle = 0.0;
-    }
-    iRotateSprite(&met, rotationCenterX, rotationCenterY, meteorRotationAngle);
-    
 }
+void updateBonuses() {
+    if (gamestate == 21) {
+        // Health bonus
+        hpbonus_spawn_timer += 50;
+        if (!bonushp && hpbonus_spawn_timer >= 5000) {
+            bonushp = true;
+            // Use -1 for inactive bonuses
+            bonushpx = getNonOverlappingXPosition(bonusrocketx * bonusrocket, bonusshieldx * bonusshield, 100);
+            bonushpy = SCREEN_HEIGHT + 50;
+            iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
+            hpbonus_spawn_timer = 0;
+        }
+        if (bonushp) {
+            bonushpy -= 10;
+            iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
+            if (bonushpy < -50) {
+                bonushp = false;
+                hpbonus_spawn_timer = 0;
+            }
+        }
 
+        // Rocket bonus
+        rocket_spawn_timer += 50;
+        if (!bonusrocket && rocket_spawn_timer >= 12000) {
+            bonusrocket = true;
+            bonusrocketx = getNonOverlappingXPosition(bonushpx * bonushp, bonusshieldx * bonusshield, 100);
+            bonusrockety = SCREEN_HEIGHT + 50;
+            iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
+            rocket_spawn_timer = 0;
+        }
+        if (bonusrocket) {
+            bonusrockety -= 10;
+            iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
+            if (bonusrockety < -50) {
+                bonusrocket = false;
+                rocket_spawn_timer = 0;
+            }
+        }
+
+        // Shield bonus
+        shield_spawn_timer += 50;
+        if (!bonusshield && shield_spawn_timer >= 17000) {
+            bonusshield = true;
+            bonusshieldx = getNonOverlappingXPosition(bonushpx * bonushp, bonusrocketx * bonusrocket, 100);
+            bonusshieldy = SCREEN_HEIGHT + 50;
+            iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
+            shield_spawn_timer = 0;
+        }
+        if (bonusshield) {
+            bonusshieldy -= 10;
+            iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
+            if (bonusshieldy < -50) {
+                bonusshield = false;
+                shield_spawn_timer = 0;
+            }
+        }
+    }
+}
 void enem_shoot() {
     if (gamestate == 21) {
         // Fire for enem1
@@ -271,7 +350,9 @@ void updateEnemy() {
             if (enem1_respawn_timer >= 1000) { // Respawn every 1 second
                 enem1_active = true;
                 enem1_x = 1200; // Start at right edge
-                enem1_y = 500; // Fixed y-position
+                enem1_y = rand() % SCREEN_HEIGHT; 
+                if (enem1_y > SCREEN_HEIGHT-100) enem1_y = SCREEN_HEIGHT-250;
+                else if(enem1_y < 50) enem1_y = 50;// Fixed y-position
                 iSetSpritePosition(&enem1, enem1_x, enem1_y);
                 iChangeSpriteFrames(&enem1, e1idle, 1);
                 enem1_respawn_timer = 0; // Reset timer
@@ -296,8 +377,12 @@ void updateEnemy() {
             enem2_respawn_timer += 50; // Increment timer (50ms per call)
             if (enem2_respawn_timer >= 1000) { // Respawn every 1 second
                 enem2_active = true;
+                enem2hp = 4;
                 enem2_x = 1200; // Start at right edge
-                enem2_y = 100; // Fixed y-position
+                if (enem1_y > 350)enem2_y = enem1_y - 400;
+                else enem2_y = enem1_y + 300;
+                if (enem2_y > SCREEN_HEIGHT-100) enem2_y = SCREEN_HEIGHT-250;
+                 // Fixed y-position
                 iSetSpritePosition(&enem2, enem2_x, enem2_y);
                 iChangeSpriteFrames(&enem2, e2idle, 1);
                 enem2_respawn_timer = 0; // Reset timer
@@ -373,10 +458,34 @@ void checkEnemSpaceCollision() {
         if (iCheckCollision(&spaceship, &met)) {
             metx = 550;
             mety = 750;
-            meteor = true; // Set meteor flag to true
+            meteor = false; // Set meteor flag to true
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
+        }
+        if (meteor && iCheckCollision(&spaceship, &met)) {
+            meteor = false; // Deactivate meteor
+            meteor_spawn_timer = 0; // Reset timer for next spawn
+            shipexp = true;
+            ship_state = EXP;
+            exp_idx = 0;
+        }
+        if (bonushp && iCheckCollision(&spaceship, &bo_hp)) {
+            if (health < 3) {
+                health++;
+            }
+            bonushp = false;
+            hpbonus_spawn_timer = 0;
+        }
+        if (bonusrocket && iCheckCollision(&spaceship, &bo_roc)) {
+            bonusrocket = false;
+            rocket_spawn_timer = 0;
+            
+        }
+        if (bonusshield && iCheckCollision(&spaceship, &bo_shi)) {
+            bonusshield = false;
+            shield_spawn_timer = 0;
+            
         }
     }
 }
@@ -416,6 +525,19 @@ void checkBulletEnemyCollision() {
                             iChangeSpriteFrames(&enem2, e2exp, 12);
                             iSetSpritePosition(&enem2, enem2_x, enem2_y);
                         }
+                    }
+                }
+            }
+        }
+        if (meteor) {
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    if (iCheckCollision(&bullet_sprites[i], &met)) {
+                        bullet_active[i] = 0; // Deactivate bullet
+                        meteor = false; // Deactivate meteor
+                        meteor_spawn_timer = 0; // Reset timer for next spawn
+                        scorenumber += 50; // Optional: Award points for hitting meteor
+                        sprintf(scoretext, "%d", scorenumber);
                     }
                 }
             }
@@ -501,21 +623,24 @@ void mainpage1() {
     }
     
     iText(1150, 650, scoretext, GLUT_BITMAP_TIMES_ROMAN_24);
-    iShowSprite(&met);
+    if (meteor)iShowSprite(&met);
+    if (bonushp) iShowSprite(&bo_hp);
     checkBulletEnemyCollision();
     checkEnemSpaceCollision();
     enemBulletCollision();  
     iShowSpeed(1110,20);
     if(health==3){
        // iShowImage(0,0, "assets/images/hp/full.png");
-       iShowLoadedImage(0, -70, &hp1);
+       iShowLoadedImage(-10, 550, &hp1);
     }else if(health==2){
        // iShowImage(0,0, "assets/images/hp/medium.png");
-       iShowLoadedImage(0,-70 , &hp2);  
+       iShowLoadedImage(-10,550 , &hp2);  
     }else if(health==1){
        // iShowImage(0,0, "assets/images/hp/low.png");
-       iShowLoadedImage(0, -70, &hp3);
+       iShowLoadedImage(-10, 550, &hp3);
     }
+    if (bonusrocket) iShowSprite(&bo_roc);
+    if (bonusshield) iShowSprite(&bo_shi);
 }
 void moveBullets() {
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -709,7 +834,8 @@ int main(int argc, char *argv[]) {
     iSetTimer(200, updateAnimation); // Update animation every 200ms
     iSetTimer(50, updateEnemy); // Update enemy every 50ms
     iSetTimer(50, updateEnemyExplosion); // Update explosion every 50ms
-    iSetTimer(225, updatemeteor);
+    iSetTimer(50, updatemeteor);
+    iSetTimer(50, updateBonuses); // Timer for hpbonus
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
