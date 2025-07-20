@@ -983,19 +983,28 @@ void iSpecialKeyboard(unsigned char key, int state) {
             break;
     }
 }
-
+void timer()
+{
+    moveBullets();
+    moveSpaceship();
+    updateBonuses();
+    updateEnemy();
+    updateEnemyExplosion();
+    updatemeteor();
+}
 int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     iInitializeSound();
     loadresources();
     sound_manage();
-    iSetTimer(50, moveBullets);
-    iSetTimer(50, moveSpaceship);
+    iSetTimer(50, timer);
+    //iSetTimer(50, moveBullets);
+    //iSetTimer(50, moveSpaceship);
     iSetTimer(200, updateAnimation);
-    iSetTimer(50, updateEnemy);
-    iSetTimer(50, updateEnemyExplosion);
-    iSetTimer(50, updatemeteor);
-    iSetTimer(50, updateBonuses);
+    //iSetTimer(50, updateEnemy);
+    //iSetTimer(50, updateEnemyExplosion);
+    //iSetTimer(50, updatemeteor);
+    //iSetTimer(50, updateBonuses);
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
