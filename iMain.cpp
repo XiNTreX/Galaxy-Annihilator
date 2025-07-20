@@ -20,6 +20,7 @@ int shield_hp = 3;
 Image shieldimg[1];
 Sprite shieldsprt;
 int shieldx, shieldy;
+
 int bonushpx = 700, bonusrocketx = 500, bonusshieldx = 1000;
 int bonushpy = 1500, bonusrockety = -1800, bonusshieldy = 800;
 bool bonusrocket = false, bonusshield = false, bonushp = false;
@@ -1151,6 +1152,7 @@ void iKeyboard(unsigned char key, int state) {
             }
             if (gamestate == 2) gamestate = 1;
             break;
+
         }
     }
 }
