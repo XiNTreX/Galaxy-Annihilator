@@ -1140,13 +1140,7 @@ void iKeyboard(unsigned char key, int state) {
                     }
                 }
                 break;
-        }
-    }
-}
-
-void iSpecialKeyPress(unsigned char key) {
-    switch (key) {
-        case GLUT_KEY_END:
+            case 27:
             if (gamestate == 21) {
                 game_paused = true;
                 iPauseTimer(timer_id);
@@ -1157,6 +1151,13 @@ void iSpecialKeyPress(unsigned char key) {
             }
             if (gamestate == 2) gamestate = 1;
             break;
+        }
+    }
+}
+
+void iSpecialKeyPress(unsigned char key) {
+    switch (key) {
+        
         default:
             break;
     }
