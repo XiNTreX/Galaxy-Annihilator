@@ -12,6 +12,8 @@ using namespace std;
 double meteorRotationAngle = 0.0;
 double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
 
+int gocount=0;
+Image go1,go2,go3,go4,go5,go6,go7,go8,gameoverscreen;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
 int wrap;
 Image paused;
@@ -20,7 +22,6 @@ int shield_hp = 3;
 Image shieldimg[1];
 Sprite shieldsprt;
 int shieldx, shieldy;
-
 int bonushpx = 700, bonusrocketx = 500, bonusshieldx = 1000;
 int bonushpy = 1500, bonusrockety = -1800, bonusshieldy = 800;
 bool bonusrocket = false, bonusshield = false, bonushp = false;
@@ -82,9 +83,7 @@ int rocket_powerup_start_time = 0;
 bool game_paused = false;
 int timer_id, animation_timer_id;
 
-// NEW: Function to reset game state for restart
 void resetGame() {
-    // Reset player state
     health = 3;
     move_ud = 280;
     move_lf = 0;
@@ -95,12 +94,8 @@ void resetGame() {
     exp_idx = 0;
     iSetSpritePosition(&spaceship, move_lf, move_ud);
     iChangeSpriteFrames(&spaceship, idle, 1);
-
-    // Reset score
     scorenumber = 0;
     sprintf(scoretext, "%d", scorenumber);
-
-    // Reset enemies
     enem1_active = false;
     enem1_x = 1200;
     enem1_y = 500;
@@ -110,7 +105,6 @@ void resetGame() {
     enem1_fire_timer = 0;
     iSetSpritePosition(&enem1, enem1_x, enem1_y);
     iChangeSpriteFrames(&enem1, e1idle, 1);
-
     enem2_active = false;
     enem2_x = 1200;
     enem2_y = 100;
@@ -121,8 +115,6 @@ void resetGame() {
     enem2hp = 4;
     iSetSpritePosition(&enem2, enem2_x, enem2_y);
     iChangeSpriteFrames(&enem2, e2idle, 1);
-
-    // Reset bullets
     for (int i = 0; i < MAX_BULLETS; i++) {
         bullet_active[i] = 0;
         ebullet_active[i] = 0;
@@ -132,15 +124,11 @@ void resetGame() {
         e5bullet_active[i] = 0;
         e6bullet_active[i] = 0;
     }
-
-    // Reset meteor
     meteor = false;
     metx = 550;
     mety = 1000;
     meteor_spawn_timer = 0;
     iSetSpritePosition(&met, metx, mety);
-
-    // Reset power-ups
     bonushp = false;
     bonusrocket = false;
     bonusshield = false;
@@ -159,25 +147,36 @@ void resetGame() {
     iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
     iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
     iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
-
-    // Reset shield
     shield_active = false;
     shield_hp = 3;
     iSetSpritePosition(&shieldsprt, -100, -100);
-
-    // Reset timers
     meteorRotationAngle = 0.0;
     hprotangle = 0.0;
     rockrotangle = 0.0;
     shieldrotangle = 0.0;
     invincibility_end_time = 0;
-
-    // Resume timers
     iResumeTimer(timer_id);
     iResumeTimer(animation_timer_id);
 }
 
 void loadresources() {
+    iLoadImage(&gameoverscreen,"assets/images/gotemp.png");
+    iLoadImage(&go1, "assets/images/gameover/1.png");
+    iLoadImage(&go2, "assets/images/gameover/2.png");
+    iLoadImage(&go3, "assets/images/gameover/3.png");
+    iLoadImage(&go4, "assets/images/gameover/4.png");
+    iLoadImage(&go5, "assets/images/gameover/5.png");
+    iLoadImage(&go6, "assets/images/gameover/6.png");
+    iLoadImage(&go7, "assets/images/gameover/7.png");
+    iLoadImage(&go8, "assets/images/gameover/8.png");
+    iScaleImage(&go1,0.3);
+    iScaleImage(&go2,0.3);
+    iScaleImage(&go3,0.3);
+    iScaleImage(&go4,0.3);
+    iScaleImage(&go5,0.3);
+    iScaleImage(&go6,0.3);
+    iScaleImage(&go7,0.3);
+    iScaleImage(&go8,0.3);
     iLoadImage(&num0, "assets/images/numbers/0/1000009435.png");
     iLoadImage(&num1, "assets/images/numbers/1/1000009434.png");
     iLoadImage(&num2, "assets/images/numbers/2/1000009433.png");
@@ -321,10 +320,16 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
     if (ship_state == EXP && shipexp) {
-        exp_idx = (exp_idx + 1) % 7;
-        exp_idx++;
-        shipexp = false;
-        iChangeSpriteFrames(&spaceship, s_exp, 7);
+        iAnimateSprite(&spaceship); // Advance to next frame
+        exp_idx = (exp_idx + 1) ;
+        if (spaceship.currentFrame >= 6 || exp_idx>=6) { // 7 frames, indexed 0 to 6
+            shipexp = false;
+            ship_state = IDLE;
+            gamestate = 211; // Game over state
+           // gamestate = 1; // Return to main menu
+           // resetGame(); // Reset game state
+            iChangeSpriteFrames(&spaceship, idle, 1); // Reset to idle frames
+        }
     }
 }
 
@@ -363,7 +368,6 @@ void moveSpaceship() {
         }
     }
 }
-
 
 void updatemeteor() {
     if (game_paused) return;
@@ -670,6 +674,7 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
         }
         if (iCheckCollision(&spaceship, &enem2) && !shield_active) {
             enem2_active = false;
@@ -679,6 +684,7 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
         }
         if (iCheckCollision(&spaceship, &met) && !shield_active) {
             metx = 550;
@@ -687,6 +693,7 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
         }
         if (meteor && iCheckCollision(&spaceship, &met)) {
             meteor = false;
@@ -694,6 +701,7 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
         }
         if (bonushp && iCheckCollision(&spaceship, &bo_hp)) {
             if (health < 3) {
@@ -799,6 +807,7 @@ void enemBulletCollision() {
                     shipexp = true;
                     ship_state = EXP;
                     exp_idx = 0;
+                    iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
                 }
                 return;
             }
@@ -821,6 +830,7 @@ void enemBulletCollision() {
                     shipexp = true;
                     ship_state = EXP;
                     exp_idx = 0;
+                    iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
                 }
                 return;
             }
@@ -959,6 +969,27 @@ void iDraw() {
                 iShowText(475, 170, "MAIN MENU", "assets/fonts/mokoto.ttf");
             }
             break;
+            case 211:
+            iShowLoadedImage(0, 0, &gameoverscreen);
+            if(gocount==0){
+                iShowLoadedImage(400,300,&go1);
+            }else if(gocount==1){
+                iShowLoadedImage(400,300,&go2);
+            }else if(gocount==2){
+                iShowLoadedImage(400,300,&go3);
+            }else if(gocount==3){
+                iShowLoadedImage(400,300,&go4);
+            }else if(gocount==4){
+                iShowLoadedImage(400,300,&go5);
+            }else if(gocount==5){
+                iShowLoadedImage(400,300,&go6);
+            }else if(gocount==6){
+                iShowLoadedImage(400,300,&go7);
+            }else if(gocount==7){
+                iShowLoadedImage(400,300,&go8);
+            }
+            
+
     }
 }
 
@@ -991,14 +1022,14 @@ void iMouse(int button, int state, int mx, int my) {
                 break;
             case 21:
                 if (game_paused) {
-                    if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403)) { // Resume button
+                    if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403)) {
                         game_paused = false;
                         iResumeTimer(timer_id);
                         iResumeTimer(animation_timer_id);
                         if (sound_check == 0) 
                             iResumeSound(mainidx);
                     }
-                    else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303)) { // MODIFIED: Restart button
+                    else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303)) {
                         game_paused = false;
                         resetGame();
                         gamestate = 21;
@@ -1006,7 +1037,7 @@ void iMouse(int button, int state, int mx, int my) {
                             iResumeSound(mainidx);
                         }
                     }
-                    else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203)) { // MODIFIED: Main Menu button
+                    else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203)) {
                         game_paused = false;
                         resetGame();
                         gamestate = 1;
@@ -1017,6 +1048,18 @@ void iMouse(int button, int state, int mx, int my) {
                     }
                 }
                 break;
+                case 211:
+               // cout << mx<< "   "<<my << endl;
+               if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298)){
+                gamestate=21;
+                resetGame();
+               }
+               if((601 <= mx && mx <= 806) && (241 <= my && my <= 294)){
+                gamestate=1;
+                resetGame();
+               }
+               break;
+               
         }
     }
 }
@@ -1083,7 +1126,7 @@ void iKeyboard(unsigned char key, int state) {
                     fullscreen--;
                     break;
                 }
-            case 'o': // NEW: Pause toggle with 'o' key
+            case 'o':
                 if (gamestate == 21) {
                     game_paused = !game_paused;
                     if (game_paused) {
@@ -1142,24 +1185,22 @@ void iKeyboard(unsigned char key, int state) {
                 }
                 break;
             case 27:
-            if (gamestate == 21) {
-                game_paused = true;
-                iPauseTimer(timer_id);
-                iPauseTimer(animation_timer_id);
-                if (sound_check == 0) {
-                    iPauseSound(mainidx);
+                if (gamestate == 21) {
+                    game_paused = true;
+                    iPauseTimer(timer_id);
+                    iPauseTimer(animation_timer_id);
+                    if (sound_check == 0) {
+                        iPauseSound(mainidx);
+                    }
                 }
-            }
-            if (gamestate == 2) gamestate = 1;
-            break;
-
+                if (gamestate == 2) gamestate = 1;
+                break;
         }
     }
 }
 
 void iSpecialKeyPress(unsigned char key) {
     switch (key) {
-        
         default:
             break;
     }
@@ -1173,6 +1214,9 @@ void timer() {
     updateEnemy();
     updateEnemyExplosion();
     updatemeteor();
+    if(gamestate==211){
+        gocount=(gocount+1)%8;
+    }
 }
 
 int main(int argc, char *argv[]) {
