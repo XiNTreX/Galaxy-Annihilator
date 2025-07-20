@@ -2,13 +2,19 @@
 #include <iostream>
 #include "iSound.h"
 #include <stdlib.h>
+#include "iFont.h"
 using namespace std;
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+double meteorRotationAngle = 0.0;
+double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
+
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
+int wrap;
+Image paused;
 bool shield_active = false;
 int shield_hp = 3;
 Image shieldimg[1];
@@ -69,11 +75,106 @@ int a = 0;
 int hpbonus_spawn_timer = 0;
 int rocket_spawn_timer = 0;
 int shield_spawn_timer = 0;
-
-// Rocket power-up variables
 bool rocket_powerup_active = false;
 int rocket_powerup_end_time = 0;
-int rocket_powerup_start_time = 0; // Added to track start time
+int rocket_powerup_start_time = 0;
+bool game_paused = false;
+int timer_id, animation_timer_id;
+
+// NEW: Function to reset game state for restart
+void resetGame() {
+    // Reset player state
+    health = 3;
+    move_ud = 280;
+    move_lf = 0;
+    ship_state = IDLE;
+    shipexp = false;
+    boost_idx = 0;
+    shoot_idx = 0;
+    exp_idx = 0;
+    iSetSpritePosition(&spaceship, move_lf, move_ud);
+    iChangeSpriteFrames(&spaceship, idle, 1);
+
+    // Reset score
+    scorenumber = 0;
+    sprintf(scoretext, "%d", scorenumber);
+
+    // Reset enemies
+    enem1_active = false;
+    enem1_x = 1200;
+    enem1_y = 500;
+    enem1_respawn_timer = 0;
+    enem1_exploding = false;
+    enem1_exp_idx = 0;
+    enem1_fire_timer = 0;
+    iSetSpritePosition(&enem1, enem1_x, enem1_y);
+    iChangeSpriteFrames(&enem1, e1idle, 1);
+
+    enem2_active = false;
+    enem2_x = 1200;
+    enem2_y = 100;
+    enem2_respawn_timer = 0;
+    enem2_exploding = false;
+    enem2_exp_idx = 0;
+    enem2_fire_timer = 0;
+    enem2hp = 4;
+    iSetSpritePosition(&enem2, enem2_x, enem2_y);
+    iChangeSpriteFrames(&enem2, e2idle, 1);
+
+    // Reset bullets
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        bullet_active[i] = 0;
+        ebullet_active[i] = 0;
+        e2bullet_active[i] = 0;
+        e3bullet_active[i] = 0;
+        e4bullet_active[i] = 0;
+        e5bullet_active[i] = 0;
+        e6bullet_active[i] = 0;
+    }
+
+    // Reset meteor
+    meteor = false;
+    metx = 550;
+    mety = 1000;
+    meteor_spawn_timer = 0;
+    iSetSpritePosition(&met, metx, mety);
+
+    // Reset power-ups
+    bonushp = false;
+    bonusrocket = false;
+    bonusshield = false;
+    bonushpx = 700;
+    bonushpy = 1500;
+    bonusrocketx = 500;
+    bonusrockety = -1800;
+    bonusshieldx = 1000;
+    bonusshieldy = 800;
+    hpbonus_spawn_timer = 0;
+    rocket_spawn_timer = 0;
+    shield_spawn_timer = 0;
+    rocket_powerup_active = false;
+    rocket_powerup_end_time = 0;
+    rocket_powerup_start_time = 0;
+    iSetSpritePosition(&bo_hp, bonushpx, bonushpy);
+    iSetSpritePosition(&bo_roc, bonusrocketx, bonusrockety);
+    iSetSpritePosition(&bo_shi, bonusshieldx, bonusshieldy);
+
+    // Reset shield
+    shield_active = false;
+    shield_hp = 3;
+    iSetSpritePosition(&shieldsprt, -100, -100);
+
+    // Reset timers
+    meteorRotationAngle = 0.0;
+    hprotangle = 0.0;
+    rockrotangle = 0.0;
+    shieldrotangle = 0.0;
+    invincibility_end_time = 0;
+
+    // Resume timers
+    iResumeTimer(timer_id);
+    iResumeTimer(animation_timer_id);
+}
 
 void loadresources() {
     iLoadImage(&num0, "assets/images/numbers/0/1000009435.png");
@@ -195,6 +296,8 @@ void loadresources() {
     iInitSprite(&enem4);
     iInitSprite(&enem5);
     iInitSprite(&enem6);
+    iLoadImage(&paused, "assets/images/paused.png");
+    iResizeImage(&paused, 400, 400);
 }
 
 int getNonOverlappingXPosition(int existing_x1, int existing_x2, int min_distance) {
@@ -207,6 +310,7 @@ int getNonOverlappingXPosition(int existing_x1, int existing_x2, int min_distanc
 }
 
 void updateAnimation() {
+    if (game_paused) return;
     if (ship_state == BOOST) {
         boost_idx = (boost_idx + 1) % 6;
         iChangeSpriteFrames(&spaceship, s_boost, 6);
@@ -224,10 +328,11 @@ void updateAnimation() {
 }
 
 void moveSpaceship() {
+    if (game_paused) return;
     if (gamestate == 21) {
         if (key_w) {
             move_ud += 25;
-           if (move_ud >= 555) move_ud = 555;
+            if (move_ud >= 555) move_ud = 555;
         }
         if (key_s) {
             move_ud -= 25;
@@ -258,9 +363,9 @@ void moveSpaceship() {
     }
 }
 
-double meteorRotationAngle = 0.0;
-int xthik = 0;
+
 void updatemeteor() {
+    if (game_paused) return;
     if (gamestate == 21) {
         meteor_spawn_timer += 50;
         if (!meteor && meteor_spawn_timer >= 5000) {
@@ -289,8 +394,8 @@ void updatemeteor() {
     }
 }
 
-double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
 void updateBonuses() {
+    if (game_paused) return;
     if (gamestate == 21) {
         hpbonus_spawn_timer += 50;
         if (!bonushp && hpbonus_spawn_timer >= 5000) {
@@ -371,6 +476,7 @@ void updateBonuses() {
 }
 
 void enem_shoot() {
+    if (game_paused) return;
     if (gamestate == 21) {
         if (enem1_active && !enem1_exploding) {
             for (int i = 0; i < MAX_BULLETS; i++) {
@@ -398,6 +504,7 @@ void enem_shoot() {
 }
 
 void updateEnemy() {
+    if (game_paused) return;
     if (gamestate == 21) {
         if (!enem1_active && !enem1_exploding) {
             enem1_respawn_timer += 50;
@@ -432,7 +539,7 @@ void updateEnemy() {
                 enem2hp = 4;
                 enem2_x = 1200;
                 if (enem1_y > 350) enem2_y = enem1_y - 400;
-                 else enem2_y = enem1_y + 300;
+                else enem2_y = enem1_y + 300;
                 if (enem2_y > SCREEN_HEIGHT - 100) enem2_y = SCREEN_HEIGHT - 250;
                 iSetSpritePosition(&enem2, enem2_x, enem2_y);
                 iChangeSpriteFrames(&enem2, e2idle, 1);
@@ -452,12 +559,13 @@ void updateEnemy() {
                 enem2_fire_timer = 0;
             }
         }
+        scorenumber++;
+        sprintf(scoretext, "%d", scorenumber);
     }
-    scorenumber++;
-    sprintf(scoretext, "%d", scorenumber);
 }
 
 void updateEnemyExplosion() {
+    if (game_paused) return;
     if (enem1_exploding) {
         enem1_exp_idx++;
         iChangeSpriteFrames(&enem1, e1exp, 10);
@@ -484,8 +592,8 @@ void updateEnemyExplosion() {
     }
 }
 
-double mainshieldrotangle = 0.0;
 void checkshieldcollision() {
+    if (game_paused) return;
     if (shield_active) {
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (ebullet_active[i]) {
@@ -551,6 +659,7 @@ void checkshieldcollision() {
 }
 
 void checkEnemSpaceCollision() {
+    if (game_paused) return;
     if (gamestate == 21) {
         if (iCheckCollision(&spaceship, &enem1) && !shield_active) {
             enem1_active = false;
@@ -611,6 +720,7 @@ void checkEnemSpaceCollision() {
 }
 
 void checkBulletEnemyCollision() {
+    if (game_paused) return;
     if (gamestate == 21) {
         if (enem1_active && !enem1_exploding) {
             for (int i = 0; i < MAX_BULLETS; i++) {
@@ -664,6 +774,7 @@ void checkBulletEnemyCollision() {
 }
 
 void enemBulletCollision() {
+    if (game_paused) return;
     if (gamestate == 21) {
         int current_time = glutGet(GLUT_ELAPSED_TIME);
         if (current_time < invincibility_end_time) {
@@ -737,7 +848,8 @@ void sound_manage() {
 
 void mainpage1() {
     iShowLoadedImage(0, 0, &mainbg);
-    iWrapImage(&mainbg, -2);
+    wrap = game_paused ? 0 : -2;
+    iWrapImage(&mainbg, wrap);
     if (shield_active) {
         iShowSprite(&shieldsprt);
     }
@@ -797,6 +909,7 @@ void mainpage1() {
 }
 
 void moveBullets() {
+    if (game_paused) return;
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullet_active[i]) {
             bullet_x[i] += 30;
@@ -837,6 +950,13 @@ void iDraw() {
             break;
         case 21:
             mainpage1();
+            if (game_paused) {
+                iShowLoadedImage(420, 400, &paused);
+                iSetColor(255, 255, 255);
+                iShowText(520, 370, "RESUME", "assets/fonts/mokoto.ttf");
+                iShowText(510, 270, "RESTART", "assets/fonts/mokoto.ttf");
+                iShowText(475, 170, "MAIN MENU", "assets/fonts/mokoto.ttf");
+            }
             break;
     }
 }
@@ -867,6 +987,34 @@ void iMouse(int button, int state, int mx, int my) {
                     gamestate = 22;
                 else if ((430 <= mx && mx <= 780) && (120 <= my && my <= 180))
                     gamestate = 23;
+                break;
+            case 21:
+                if (game_paused) {
+                    if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403)) { // Resume button
+                        game_paused = false;
+                        iResumeTimer(timer_id);
+                        iResumeTimer(animation_timer_id);
+                        if (sound_check == 0) 
+                            iResumeSound(mainidx);
+                    }
+                    else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303)) { // MODIFIED: Restart button
+                        game_paused = false;
+                        resetGame();
+                        gamestate = 21;
+                        if (sound_check == 0) {
+                            iResumeSound(mainidx);
+                        }
+                    }
+                    else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203)) { // MODIFIED: Main Menu button
+                        game_paused = false;
+                        resetGame();
+                        gamestate = 1;
+                        if (sound_check == 0) {
+                            iPauseSound(mainidx);
+                            iResumeSound(homeidx);
+                        }
+                    }
+                }
                 break;
         }
     }
@@ -934,6 +1082,24 @@ void iKeyboard(unsigned char key, int state) {
                     fullscreen--;
                     break;
                 }
+            case 'o': // NEW: Pause toggle with 'o' key
+                if (gamestate == 21) {
+                    game_paused = !game_paused;
+                    if (game_paused) {
+                        iPauseTimer(timer_id);
+                        iPauseTimer(animation_timer_id);
+                        if (sound_check == 0) {
+                            iPauseSound(mainidx);
+                        }
+                    } else {
+                        iResumeTimer(timer_id);
+                        iResumeTimer(animation_timer_id);
+                        if (sound_check == 0) {
+                            iResumeSound(mainidx);
+                        }
+                    }
+                }
+                break;
         }
     } else if (state == GLUT_UP) {
         switch (key) {
@@ -973,18 +1139,30 @@ void iKeyboard(unsigned char key, int state) {
                         sound_check = 0;
                     }
                 }
+                break;
         }
     }
 }
 
-void iSpecialKeyboard(unsigned char key, int state) {
+void iSpecialKeyPress(unsigned char key) {
     switch (key) {
+        case GLUT_KEY_END:
+            if (gamestate == 21) {
+                game_paused = true;
+                iPauseTimer(timer_id);
+                iPauseTimer(animation_timer_id);
+                if (sound_check == 0) {
+                    iPauseSound(mainidx);
+                }
+            }
+            break;
         default:
             break;
     }
 }
-void timer()
-{
+
+void timer() {
+    if (game_paused) return;
     moveBullets();
     moveSpaceship();
     updateBonuses();
@@ -992,19 +1170,15 @@ void timer()
     updateEnemyExplosion();
     updatemeteor();
 }
+
 int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     iInitializeSound();
     loadresources();
     sound_manage();
-    iSetTimer(50, timer);
-    //iSetTimer(50, moveBullets);
-    //iSetTimer(50, moveSpaceship);
-    iSetTimer(200, updateAnimation);
-    //iSetTimer(50, updateEnemy);
-    //iSetTimer(50, updateEnemyExplosion);
-    //iSetTimer(50, updatemeteor);
-    //iSetTimer(50, updateBonuses);
+    iInitializeFont();
+    timer_id = iSetTimer(50, timer);
+    animation_timer_id = iSetTimer(200, updateAnimation);
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
