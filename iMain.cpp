@@ -8,7 +8,7 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
-Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;int numcheck=10;
+Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
 bool shield_active = false;
 int shield_hp = 3;
 Image shieldimg[1];
@@ -73,9 +73,9 @@ int shield_spawn_timer = 0;
 // Rocket power-up variables
 bool rocket_powerup_active = false;
 int rocket_powerup_end_time = 0;
+int rocket_powerup_start_time = 0; // Added to track start time
 
 void loadresources() {
-    //numbers
     iLoadImage(&num0, "assets/images/numbers/0/1000009435.png");
     iLoadImage(&num1, "assets/images/numbers/1/1000009434.png");
     iLoadImage(&num2, "assets/images/numbers/2/1000009433.png");
@@ -204,12 +204,6 @@ int getNonOverlappingXPosition(int existing_x1, int existing_x2, int min_distanc
     } while ((existing_x1 != -1 && abs(new_x - existing_x1) < min_distance) ||
              (existing_x2 != -1 && abs(new_x - existing_x2) < min_distance));
     return new_x;
-}
-void numbers(){
-    if(rocket_powerup_active){
-        numcheck--;
-        if(numcheck < 0) numcheck = 10;
-    }
 }
 
 void updateAnimation() {
@@ -600,7 +594,8 @@ void checkEnemSpaceCollision() {
         }
         if (bonusrocket && iCheckCollision(&spaceship, &bo_roc)) {
             rocket_powerup_active = true;
-            rocket_powerup_end_time = glutGet(GLUT_ELAPSED_TIME) + 10000;
+            rocket_powerup_start_time = glutGet(GLUT_ELAPSED_TIME);
+            rocket_powerup_end_time = rocket_powerup_start_time + 10000;
             bonusrocket = false;
             rocket_spawn_timer = 0;
         }
@@ -782,39 +777,25 @@ void mainpage1() {
     }
     if (bonusrocket) iShowSprite(&bo_roc);
     if (bonusshield) iShowSprite(&bo_shi);
-    if(rocket_powerup_active){
-        if(numcheck==9){
-            iShowLoadedImage(180,630,&num9);
+    if (rocket_powerup_active) {
+        int current_time = glutGet(GLUT_ELAPSED_TIME);
+        int elapsed = current_time - rocket_powerup_start_time;
+        int display_number = 9 - (elapsed / 1000);
+        if (display_number >= 0 && display_number <= 9) {
+            if (display_number == 9) iShowLoadedImage(180, 630, &num9);
+            else if (display_number == 8) iShowLoadedImage(180, 630, &num8);
+            else if (display_number == 7) iShowLoadedImage(180, 630, &num7);
+            else if (display_number == 6) iShowLoadedImage(180, 630, &num6);
+            else if (display_number == 5) iShowLoadedImage(180, 630, &num5);
+            else if (display_number == 4) iShowLoadedImage(180, 630, &num4);
+            else if (display_number == 3) iShowLoadedImage(180, 630, &num3);
+            else if (display_number == 2) iShowLoadedImage(180, 630, &num2);
+            else if (display_number == 1) iShowLoadedImage(180, 630, &num1);
+            else if (display_number == 0) iShowLoadedImage(180, 630, &num0);
         }
-        else if(numcheck==8){
-            iShowLoadedImage(180,630,&num8);
-        }
-        else if(numcheck==7){
-            iShowLoadedImage(180,630,&num7);
-        }
-        else if(numcheck==6){
-            iShowLoadedImage(180,630,&num6);
-        }
-        else if(numcheck==5){
-            iShowLoadedImage(180,630,&num5);
-        }
-        else if(numcheck==4){
-            iShowLoadedImage(180,630,&num4);
-        }
-        else if(numcheck==3){
-            iShowLoadedImage(180,630,&num3);
-        }
-        else if(numcheck==2){
-            iShowLoadedImage(180,630,&num2);
-        }
-        else if(numcheck==1){
-            iShowLoadedImage(180,630,&num1);
-        }
-        else if(numcheck==0){
-            iShowLoadedImage(180,630,&num0);
     }
 }
-}
+
 void moveBullets() {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullet_active[i]) {
@@ -1015,7 +996,6 @@ int main(int argc, char *argv[]) {
     iSetTimer(50, updateEnemyExplosion);
     iSetTimer(50, updatemeteor);
     iSetTimer(50, updateBonuses);
-    iSetTimer(1000,numbers);
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
