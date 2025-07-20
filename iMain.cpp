@@ -1155,6 +1155,7 @@ void iSpecialKeyPress(unsigned char key) {
                     iPauseSound(mainidx);
                 }
             }
+            if (gamestate == 2) gamestate = 1;
             break;
         default:
             break;
