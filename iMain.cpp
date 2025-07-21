@@ -9,11 +9,12 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+int scorecolour=0;int scorecolourtimer=0;
 double meteorRotationAngle = 0.0;
 double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
 
 int gocount=0;
-Image go1,go2,go3,go4,go5,go6,go7,go8,gameoverscreen;
+Image go1,go2,go3,go4,go5,go6,go7,go8,gameoverscreen,score1,score2,score3;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
 int wrap;
 Image paused;
@@ -160,6 +161,12 @@ void resetGame() {
 }
 
 void loadresources() {
+    iLoadImage(&score1,"assets/images/gameover/score1.png");
+    iLoadImage(&score2,"assets/images/gameover/score2.png");
+    iLoadImage(&score3,"assets/images/gameover/score3.png");
+    iScaleImage(&score1,0.17);
+    iScaleImage(&score2,0.17);
+    iScaleImage(&score3,0.17);
     iLoadImage(&gameoverscreen,"assets/images/gotemp.png");
     iLoadImage(&go1, "assets/images/gameover/1.png");
     iLoadImage(&go2, "assets/images/gameover/2.png");
@@ -320,21 +327,23 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
     if (ship_state == EXP && shipexp) {
-        iAnimateSprite(&spaceship); // Advance to next frame
-        exp_idx = (exp_idx + 1) ;
-        if (spaceship.currentFrame >= 6 || exp_idx>=6) { // 7 frames, indexed 0 to 6
+        printf("Explosion frame: %d\n", exp_idx);  // Debug output
+        exp_idx++;
+        if (exp_idx < 7) {
+            spaceship.currentFrame = exp_idx;
+        } else {
+            printf("Explosion complete, transitioning to game over\n");  // Debug output
             shipexp = false;
             ship_state = IDLE;
-            gamestate = 211; // Game over state
-           // gamestate = 1; // Return to main menu
-           // resetGame(); // Reset game state
-            iChangeSpriteFrames(&spaceship, idle, 1); // Reset to idle frames
+            gamestate = 211;
+            iChangeSpriteFrames(&spaceship, idle, 1);
+            exp_idx = 0;
         }
     }
 }
 
 void moveSpaceship() {
-    if (game_paused) return;
+    if (game_paused || ship_state == EXP) return;
     if (gamestate == 21) {
         if (key_w) {
             move_ud += 25;
@@ -666,7 +675,7 @@ void checkshieldcollision() {
 void checkEnemSpaceCollision() {
     if (game_paused) return;
     if (gamestate == 21) {
-        if (iCheckCollision(&spaceship, &enem1) && !shield_active) {
+        if (iCheckCollision(&spaceship, &enem1) && !shield_active && !shipexp) {
             enem1_active = false;
             enem1_exploding = true;
             enem1_exp_idx = 0;
@@ -674,9 +683,10 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
-            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            spaceship.currentFrame = 0;
         }
-        if (iCheckCollision(&spaceship, &enem2) && !shield_active) {
+        if (iCheckCollision(&spaceship, &enem2) && !shield_active && !shipexp) {
             enem2_active = false;
             enem2_exploding = true;
             enem2_exp_idx = 0;
@@ -684,24 +694,27 @@ void checkEnemSpaceCollision() {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
-            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            spaceship.currentFrame = 0;
         }
-        if (iCheckCollision(&spaceship, &met) && !shield_active) {
+        if (iCheckCollision(&spaceship, &met) && !shield_active && !shipexp) {
             metx = 550;
             mety = 750;
             meteor = false;
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
-            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            spaceship.currentFrame = 0;
         }
-        if (meteor && iCheckCollision(&spaceship, &met)) {
+        if (meteor && iCheckCollision(&spaceship, &met) && !shield_active && !shipexp) {
             meteor = false;
             meteor_spawn_timer = 0;
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
-            iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            spaceship.currentFrame = 0;
         }
         if (bonushp && iCheckCollision(&spaceship, &bo_hp)) {
             if (health < 3) {
@@ -790,7 +803,7 @@ void enemBulletCollision() {
             return;
         }
         for (int i = 0; i < MAX_BULLETS; i++) {
-            if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i])) {
+            if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp) {
                 ebullet_active[i] = 0;
                 if (!shield_active) {
                     health--;
@@ -807,13 +820,14 @@ void enemBulletCollision() {
                     shipexp = true;
                     ship_state = EXP;
                     exp_idx = 0;
-                    iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+                    iChangeSpriteFrames(&spaceship, s_exp, 7);
+                    spaceship.currentFrame = 0;
                 }
                 return;
             }
         }
         for (int i = 0; i < MAX_BULLETS; i++) {
-            if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i])) {
+            if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i]) && !shipexp) {
                 e2bullet_active[i] = 0;
                 if (!shield_active) {
                     health--;
@@ -830,7 +844,8 @@ void enemBulletCollision() {
                     shipexp = true;
                     ship_state = EXP;
                     exp_idx = 0;
-                    iChangeSpriteFrames(&spaceship, s_exp, 7); // Set explosion frames once
+                    iChangeSpriteFrames(&spaceship, s_exp, 7);
+                    spaceship.currentFrame = 0;
                 }
                 return;
             }
@@ -969,7 +984,7 @@ void iDraw() {
                 iShowText(475, 170, "MAIN MENU", "assets/fonts/mokoto.ttf");
             }
             break;
-            case 211:
+        case 211:
             iShowLoadedImage(0, 0, &gameoverscreen);
             if(gocount==0){
                 iShowLoadedImage(400,300,&go1);
@@ -988,8 +1003,16 @@ void iDraw() {
             }else if(gocount==7){
                 iShowLoadedImage(400,300,&go8);
             }
-            
-
+            if(scorecolour==0){
+                iShowLoadedImage(400,50,&score1);
+            }else if(scorecolour==1){
+                iShowLoadedImage(400,50,&score2);
+            }else if(scorecolour==2){
+                iShowLoadedImage(400,50,&score3);
+            }
+            sprintf(scoretext, "%d", scorenumber);
+            iShowText(640,140,scoretext,"assets/fonts/Orbitron-Medium.ttf");
+            break;
     }
 }
 
@@ -1048,18 +1071,16 @@ void iMouse(int button, int state, int mx, int my) {
                     }
                 }
                 break;
-                case 211:
-               // cout << mx<< "   "<<my << endl;
-               if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298)){
-                gamestate=21;
-                resetGame();
-               }
-               if((601 <= mx && mx <= 806) && (241 <= my && my <= 294)){
-                gamestate=1;
-                resetGame();
-               }
-               break;
-               
+            case 211:
+                if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298)){
+                    gamestate=21;
+                    resetGame();
+                }
+                if((601 <= mx && mx <= 806) && (241 <= my && my <= 294)){
+                    gamestate=1;
+                    resetGame();
+                }
+                break;
         }
     }
 }
@@ -1085,33 +1106,35 @@ void iKeyboard(unsigned char key, int state) {
                 key_d = true;
                 break;
             case 'p':
-                ship_state = SHOOT;
-                iChangeSpriteFrames(&spaceship, s_shoot, 4);
-                iAnimateSprite(&spaceship);
-                if (rocket_powerup_active) {
-                    int num_bullets = 5;
-                    int y_offsets[5] = {83 + 30, 83 + 15, 83, 83 - 15, 83 - 30};
-                    int fired = 0;
-                    for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++) {
-                        if (!bullet_active[i]) {
-                            bullet_x[i] = move_lf + 190;
-                            bullet_y[i] = move_ud + y_offsets[fired];
-                            iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
-                            bullet_active[i] = 1;
-                            fired++;
+                if (ship_state != EXP) {
+                    ship_state = SHOOT;
+                    iChangeSpriteFrames(&spaceship, s_shoot, 4);
+                    iAnimateSprite(&spaceship);
+                    if (rocket_powerup_active) {
+                        int num_bullets = 5;
+                        int y_offsets[5] = {83 + 30, 83 + 15, 83, 83 - 15, 83 - 30};
+                        int fired = 0;
+                        for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++) {
+                            if (!bullet_active[i]) {
+                                bullet_x[i] = move_lf + 190;
+                                bullet_y[i] = move_ud + y_offsets[fired];
+                                iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+                                bullet_active[i] = 1;
+                                fired++;
+                            }
                         }
-                    }
-                } else {
-                    int num_bullets = 2;
-                    int y_offsets[2] = {90, 77};
-                    int fired = 0;
-                    for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++) {
-                        if (!bullet_active[i]) {
-                            bullet_x[i] = move_lf + 190;
-                            bullet_y[i] = move_ud + y_offsets[fired];
-                            iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
-                            bullet_active[i] = 1;
-                            fired++;
+                    } else {
+                        int num_bullets = 2;
+                        int y_offsets[2] = {90, 77};
+                        int fired = 0;
+                        for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++) {
+                            if (!bullet_active[i]) {
+                                bullet_x[i] = move_lf + 190;
+                                bullet_y[i] = move_ud + y_offsets[fired];
+                                iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+                                bullet_active[i] = 1;
+                                fired++;
+                            }
                         }
                     }
                 }
@@ -1120,12 +1143,11 @@ void iKeyboard(unsigned char key, int state) {
                 if (fullscreen == 0) {
                     iEnterFullscreen();
                     fullscreen++;
-                    break;
                 } else {
                     iLeaveFullscreen();
                     fullscreen--;
-                    break;
                 }
+                break;
             case 'o':
                 if (gamestate == 21) {
                     game_paused = !game_paused;
@@ -1160,8 +1182,10 @@ void iKeyboard(unsigned char key, int state) {
                 key_d = false;
                 break;
             case 'p':
-                ship_state = IDLE;
-                iChangeSpriteFrames(&spaceship, idle, 1);
+                if (ship_state != EXP) {
+                    ship_state = IDLE;
+                    iChangeSpriteFrames(&spaceship, idle, 1);
+                }
                 break;
             case 'm':
                 if (sound_check == 0) {
@@ -1216,6 +1240,11 @@ void timer() {
     updatemeteor();
     if(gamestate==211){
         gocount=(gocount+1)%8;
+        scorecolourtimer+=50;
+        if(scorecolourtimer>=1000){
+            scorecolour=(scorecolour+1)%3;
+            scorecolourtimer=0;
+        }
     }
 }
 
@@ -1226,7 +1255,7 @@ int main(int argc, char *argv[]) {
     sound_manage();
     iInitializeFont();
     timer_id = iSetTimer(50, timer);
-    animation_timer_id = iSetTimer(200, updateAnimation);
+    animation_timer_id = iSetTimer(100, updateAnimation);  // 100ms for smoother animation
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
