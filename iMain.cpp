@@ -13,6 +13,7 @@ int scorecolour=0;int scorecolourtimer=0;
 double meteorRotationAngle = 0.0;
 double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
 
+bool just_reset=false;
 int gocount=0;
 Image go1,go2,go3,go4,go5,go6,go7,go8,gameoverscreen,score1,score2,score3;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
@@ -158,6 +159,7 @@ void resetGame() {
     invincibility_end_time = 0;
     iResumeTimer(timer_id);
     iResumeTimer(animation_timer_id);
+    just_reset=true;
 }
 
 void loadresources() {
@@ -673,6 +675,7 @@ void checkshieldcollision() {
 }
 
 void checkEnemSpaceCollision() {
+    if(just_reset) return;
     if (game_paused) return;
     if (gamestate == 21) {
         if (iCheckCollision(&spaceship, &enem1) && !shield_active && !shipexp) {
@@ -742,6 +745,7 @@ void checkEnemSpaceCollision() {
 }
 
 void checkBulletEnemyCollision() {
+     if(just_reset) return;
     if (game_paused) return;
     if (gamestate == 21) {
         if (enem1_active && !enem1_exploding) {
@@ -796,6 +800,7 @@ void checkBulletEnemyCollision() {
 }
 
 void enemBulletCollision() {
+     if(just_reset) return;
     if (game_paused) return;
     if (gamestate == 21) {
         int current_time = glutGet(GLUT_ELAPSED_TIME);
@@ -932,6 +937,7 @@ void mainpage1() {
             else if (display_number == 0) iShowLoadedImage(180, 630, &num0);
         }
     }
+    just_reset=false;
 }
 
 void moveBullets() {
@@ -1073,12 +1079,14 @@ void iMouse(int button, int state, int mx, int my) {
                 break;
             case 211:
                 if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298)){
-                    gamestate=21;
+                   
                     resetGame();
+                    gamestate=21;
                 }
                 if((601 <= mx && mx <= 806) && (241 <= my && my <= 294)){
-                    gamestate=1;
+                    
                     resetGame();
+                    gamestate=1;
                 }
                 break;
         }
