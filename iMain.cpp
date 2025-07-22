@@ -975,6 +975,7 @@ void iDraw() {
     iClear();
     switch (gamestate) {
         case 1:
+            ship_state = IDLE;
             homepage();
             break;
         case 2:
@@ -1079,12 +1080,12 @@ void iMouse(int button, int state, int mx, int my) {
                 break;
             case 211:
                 if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298)){
-                   
+                    game_paused=false;
                     resetGame();
                     gamestate=21;
                 }
                 if((601 <= mx && mx <= 806) && (241 <= my && my <= 294)){
-                    
+                    game_paused=false;  
                     resetGame();
                     gamestate=1;
                 }
