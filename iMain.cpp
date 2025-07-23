@@ -305,7 +305,7 @@ void loadresources() {
     iLoadImage(&e6bul[0], "assets/images/sprites/enemy/Shots/Shot6/mainbull/shot6_2.png");
     for (int i = 0; i < MAX_BULLETS; i++) {
         iInitSprite(&e6bulsprite[i]);
-        iScaleSprite(&e6bulsprite[i], 4);
+        iScaleSprite(&e6bulsprite[i], 2);
         iMirrorSprite(&e6bulsprite[i], HORIZONTAL);
         iChangeSpriteFrames(&e6bulsprite[i], e6bul, 1);
         e6bullet_active[i] = 0;
@@ -344,7 +344,7 @@ void loadresources() {
     iInitSprite(&enem4);
     iInitSprite(&enem5);
     iInitSprite(&enem6);
-    iScaleSprite(&enem6, 4);
+    iScaleSprite(&enem6, 2);
     iChangeSpriteFrames(&enem6, e6idle, 1);
     iSetSpritePosition(&enem6, enem6_x, enem6_y);
     iLoadImage(&paused, "assets/images/paused.png");
@@ -559,17 +559,28 @@ void enem_shoot() {
                 }
             }
         }
-        if (enem6_active && !enem6_exploding) {
+        // In enem_shoot, modify the Enemy 6 section:
+if (enem6_active && !enem6_exploding) {
+    enem6_fire_timer += 50;
+    if (enem6_fire_timer >= 2000) { // Was 1000
+        int active_bullets = 0;
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (e6bullet_active[i]) active_bullets++;
+        }
+        if (active_bullets < 5) { // Limit to 5 active bullets
             for (int i = 0; i < MAX_BULLETS; i++) {
                 if (!e6bullet_active[i]) {
-                    e6bullet_x[i] = enem6_x - 200;
-                    e6bullet_y[i] = enem6_y ;
+                    e6bullet_x[i] = enem6_x - 100; // Adjusted for smaller scale
+                    e6bullet_y[i] = enem6_y;
                     iSetSpritePosition(&e6bulsprite[i], e6bullet_x[i], e6bullet_y[i]);
                     e6bullet_active[i] = 1;
                     break;
                 }
             }
         }
+        enem6_fire_timer = 0;
+    }
+}
     }
 }
 
@@ -659,18 +670,19 @@ void updateEnemy() {
         if (scorenumber >= 500) {
             enem6_active = true;
         }
-        if (enem6_active && !enem6_exploding) {
-            enem6_x -= 10;
+        if (enem6_exploding) {
+        enem6_exp_idx++;
+        if (enem6_exp_idx < 6) { // Was 11
+            iChangeSpriteFrames(&enem6, e6exp, 6);
+            enem6.currentFrame = enem6_exp_idx;
             iSetSpritePosition(&enem6, enem6_x, enem6_y);
-            if (enem6_x < 800) {
-                enem6_x = 800;
-            }
-            enem6_fire_timer += 50; // Adjusted to 100ms
-            if (enem6_fire_timer >= 1000) {
-                enem_shoot();
-                enem6_fire_timer = 0;
-            }
         }
+        if (enem6_exp_idx >= 6) {
+            enem6_exploding = false;
+            enem6_active = false;
+            gamestate = 211;
+        }
+    }
     }
 }
 
@@ -756,11 +768,11 @@ void checkshieldcollision() {
                 }
             }
         }
-        for (int i = 0; i < MAX_BULLETS; i++) {
+       for (int i = 0; i < MAX_BULLETS; i++) {
             if (e6bullet_active[i]) {
                 if (iCheckCollision(&shieldsprt, &e6bulsprite[i])) {
                     e6bullet_active[i] = 0;
-                    shield_hp-=3;
+                    shield_hp -= 3;
                     if (shield_hp <= 0) {
                         shield_active = false;
                         shield_hp = 3;
@@ -805,11 +817,17 @@ void checkshieldcollision() {
             }
         }
         if (iCheckCollision(&shieldsprt, &enem6)) {
-            shield_hp -= 3;
-            if (shield_hp <= 0) {
-                shield_active = false;
-                shield_hp = 3;
-                iSetSpritePosition(&shieldsprt, -100, -100);
+            int shield_w = 50; // Adjust based on shield sprite size
+            int shield_h = 50;
+            int enem6_w = 110; // Adjusted for scale 2
+            int enem6_h = 110;
+            if (boundingBoxCollision(shieldx, shieldy, shield_w, shield_h, enem6_x, enem6_y, enem6_w, enem6_h)) {
+                shield_hp -= 3;
+                if (shield_hp <= 0) {
+                    shield_active = false;
+                    shield_hp = 3;
+                    iSetSpritePosition(&shieldsprt, -100, -100);
+                }
             }
         }
     }
@@ -962,25 +980,23 @@ void checkBulletEnemyCollision() {
             }
         }
         if (enem6_active && !enem6_exploding) {
-            int enem6_w = 220; // Adjusted for scale 2.2
-            int enem6_h = 220;
+            int enem6_w = 110; // Adjusted for scale 2
+            int enem6_h = 110;
             for (int i = 0; i < MAX_BULLETS; i++) {
                 if (bullet_active[i]) {
                     int bullet_w = 10;
                     int bullet_h = 10;
                     if (boundingBoxCollision(bullet_x[i], bullet_y[i], bullet_w, bullet_h, enem6_x, enem6_y, enem6_w, enem6_h)) {
-                        if (iCheckCollision(&bullet_sprites[i], &enem6)) {
-                            bullet_active[i] = 0;
-                            enem6hp--;
-                            if (enem6hp <= 0) {
-                                enem6_active = false;
-                                enem6_exploding = true;
-                                scorenumber += 1000;
-                                sprintf(scoretext, "%d", scorenumber);
-                                enem6_exp_idx = 0;
-                                iChangeSpriteFrames(&enem6, e6exp, 11);
-                                iSetSpritePosition(&enem6, enem6_x, enem6_y);
-                            }
+                        bullet_active[i] = 0;
+                        enem6hp--;
+                        if (enem6hp <= 0) {
+                            enem6_active = false;
+                            enem6_exploding = true;
+                            scorenumber += 1000;
+                            sprintf(scoretext, "%d", scorenumber);
+                            enem6_exp_idx = 0;
+                            iChangeSpriteFrames(&enem6, e6exp, 6); // Was 11
+                            iSetSpritePosition(&enem6, enem6_x, enem6_y);
                         }
                     }
                 }
