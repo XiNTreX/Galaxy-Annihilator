@@ -1,4 +1,3 @@
-
 #include "iGraphics.h"
 #include <iostream>
 #include "iSound.h"
@@ -10,13 +9,16 @@ using namespace std;
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
 
+bool enem6_exploding = false;
+int enem6_exp_idx = 0;
+int enem6_x = 1250, enem6_y = 50;
 int scorecolour = 0;
 int scorecolourtimer = 0;
 double meteorRotationAngle = 0.0;
 double hprotangle = 0.0, rockrotangle = 0.0, shieldrotangle = 0.0;
-int survival_score_timer = 0; // NEW: Timer for survival score increment
+int survival_score_timer = 0;
 bool just_reset = false;
-int just_reset_timer = 0; // NEW: Timer to extend just_reset duration
+int just_reset_timer = 0;
 int gocount = 0;
 Image go1, go2, go3, go4, go5, go6, go7, go8, gameoverscreen, score1, score2, score3;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
@@ -48,13 +50,18 @@ Sprite spaceship, enem1, enem2, enem3, enem4, enem5, enem6, bullet_sprites[MAX_B
 Image s_boost[6], s_exp[7], s_shoot[4], idle[1], bullet_img[1], mete[1];
 Image e1exp[10], e1idle[1];
 Image e2exp[12], e2idle[1];
+Image e3exp[11], e3idle[1];
+Image e4exp[11], e4idle[1];
+Image e5exp[11], e5idle[1];
+Image e6exp[11], e6idle[1];
 Image e1bul[1], e2bul[1], e3bul[1], e4bul[1], e5bul[1], e6bul[1];
 int move_ud = 280, move_lf = 0;
 int bullet_x[MAX_BULLETS], bullet_y[MAX_BULLETS], bullet_active[MAX_BULLETS];
-int e2bullet_x[MAX_BULLETS], e2bullet_y[MAX_BULLETS];
+int e2bullet_x[MAX_BULLETS], e2bullet_y[MAX_BULLETS], e6bullet_x[MAX_BULLETS], e6bullet_y[MAX_BULLETS];
 int ebullet_x[MAX_BULLETS], ebullet_y[MAX_BULLETS], ebullet_active[MAX_BULLETS], e2bullet_active[MAX_BULLETS], e3bullet_active[MAX_BULLETS], e4bullet_active[MAX_BULLETS], e5bullet_active[MAX_BULLETS], e6bullet_active[MAX_BULLETS];
 int enem1_fire_timer = 0;
 int enem2_fire_timer = 0;
+int enem6_fire_timer = 0;
 enum { IDLE, BOOST, SHOOT, EXP };
 int ship_state = IDLE;
 int boost_idx = 0;
@@ -69,6 +76,7 @@ int enem1_respawn_timer = 0;
 bool enem1_exploding = false;
 int enem1_exp_idx = 0;
 bool enem2_active = false;
+bool enem6_active = false;
 int enem2_x = 1200, enem2_y = 100;
 int enem2_respawn_timer = 0;
 bool enem2_exploding = false;
@@ -76,7 +84,7 @@ int enem2_exp_idx = 0;
 bool shipexp = false;
 bool meteor = false;
 bool key_w = false, key_a = false, key_s = false, key_d = false;
-int enem1hp = 1, enem2hp = 4, enem3hp = 3, enem4hp = 4, enem5hp = 5;
+int enem1hp = 1, enem2hp = 4, enem3hp = 3, enem4hp = 4, enem5hp = 5, enem6hp = 50;
 char des[7][100];
 int a = 0;
 int hpbonus_spawn_timer = 0;
@@ -87,6 +95,11 @@ int rocket_powerup_end_time = 0;
 int rocket_powerup_start_time = 0;
 bool game_paused = false;
 int timer_id, animation_timer_id;
+
+// New bounding box collision function
+bool boundingBoxCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
 
 void resetGame() {
     health = 3;
@@ -113,6 +126,11 @@ void resetGame() {
     enem2_active = false;
     enem2_x = 1200;
     enem2_y = 100;
+    enem6_x = 1250;
+    enem6_y = 50;
+    enem6_exploding = false;
+    enem6_exp_idx = 0;
+    enem6_active = false;
     enem2_respawn_timer = 0;
     enem2_exploding = false;
     enem2_exp_idx = 0;
@@ -161,13 +179,19 @@ void resetGame() {
     shieldrotangle = 0.0;
     invincibility_end_time = 0;
     just_reset = true;
-    just_reset_timer = 2000; // NEW: Set reset timer to 2 seconds
-    survival_score_timer = 0; // NEW: Reset survival score timer
+    just_reset_timer = 2000;
+    survival_score_timer = 0;
     iResumeTimer(timer_id);
     iResumeTimer(animation_timer_id);
 }
 
 void loadresources() {
+    iMirrorSprite(&enem1, HORIZONTAL);
+    iMirrorSprite(&enem2, HORIZONTAL);
+    iMirrorSprite(&enem6, HORIZONTAL);
+    iMirrorSprite(&enem3, HORIZONTAL);
+    iMirrorSprite(&enem4, HORIZONTAL);
+    iMirrorSprite(&enem5, HORIZONTAL);
     iLoadImage(&score1, "assets/images/gameover/score1.png");
     iLoadImage(&score2, "assets/images/gameover/score2.png");
     iLoadImage(&score3, "assets/images/gameover/score3.png");
@@ -232,6 +256,8 @@ void loadresources() {
     iLoadFramesFromFolder(e1exp, "assets/images/sprites/enemy/explosions/Ship1_Explosion/");
     iLoadImage(&e2idle[0], "assets/images/sprites/enemy/Ship2/Ship2.png");
     iLoadFramesFromFolder(e2exp, "assets/images/sprites/enemy/explosions/Ship2_Explosion/");
+    iLoadImage(&e6idle[0], "assets/images/sprites/enemy/Ship6/Ship6.png");
+    iLoadFramesFromFolder(e6exp, "assets/images/sprites/enemy/explosions/Ship6_Explosion/");
     iInitSprite(&spaceship);
     iChangeSpriteFrames(&spaceship, idle, 1);
     iSetSpritePosition(&spaceship, move_lf, move_ud);
@@ -276,6 +302,14 @@ void loadresources() {
         iChangeSpriteFrames(&e5bulsprite[i], e5bul, 1);
         e5bullet_active[i] = 0;
     }
+    iLoadImage(&e6bul[0], "assets/images/sprites/enemy/Shots/Shot6/mainbull/shot6_2.png");
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        iInitSprite(&e6bulsprite[i]);
+        iScaleSprite(&e6bulsprite[i], 4);
+        iMirrorSprite(&e6bulsprite[i], HORIZONTAL);
+        iChangeSpriteFrames(&e6bulsprite[i], e6bul, 1);
+        e6bullet_active[i] = 0;
+    }
     iLoadImage(&hp1, "assets/images/hp/full.png");
     iLoadImage(&hp2, "assets/images/hp/medium.png");
     iLoadImage(&hp3, "assets/images/hp/low.png");
@@ -310,6 +344,9 @@ void loadresources() {
     iInitSprite(&enem4);
     iInitSprite(&enem5);
     iInitSprite(&enem6);
+    iScaleSprite(&enem6, 4);
+    iChangeSpriteFrames(&enem6, e6idle, 1);
+    iSetSpritePosition(&enem6, enem6_x, enem6_y);
     iLoadImage(&paused, "assets/images/paused.png");
     iResizeImage(&paused, 400, 400);
 }
@@ -334,13 +371,11 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
     if (ship_state == EXP && shipexp) {
-        printf("Explosion frame: %d\n", exp_idx); // Debug output
         exp_idx++;
         if (exp_idx < 7) {
-            iChangeSpriteFrames(&spaceship, s_exp, 7); // MODIFIED: Ensure frames are set each frame
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
             spaceship.currentFrame = exp_idx;
         } else {
-            printf("Explosion complete, transitioning to game over\n"); // Debug output
             shipexp = false;
             ship_state = IDLE;
             gamestate = 211;
@@ -389,11 +424,13 @@ void moveSpaceship() {
 void updatemeteor() {
     if (game_paused) return;
     if (gamestate == 21) {
-        meteor_spawn_timer += 50;
+        meteor_spawn_timer += 100; // Adjusted to 100ms
         if (!meteor && meteor_spawn_timer >= 5000) {
             meteor = true;
             metx = 100 + (rand() % (SCREEN_WIDTH - 50));
-            mety = SCREEN_HEIGHT + 50;
+            mety = SCREEN_HEIGHT + 50
+
+;
             iSetSpritePosition(&met, metx, mety);
             meteor_spawn_timer = 0;
         }
@@ -419,7 +456,7 @@ void updatemeteor() {
 void updateBonuses() {
     if (game_paused) return;
     if (gamestate == 21) {
-        hpbonus_spawn_timer += 50;
+        hpbonus_spawn_timer += 100; // Adjusted to 100ms
         if (!bonushp && hpbonus_spawn_timer >= 5000) {
             bonushp = true;
             bonushpx = getNonOverlappingXPosition(bonusrocketx * bonusrocket, bonusshieldx * bonusshield, 100);
@@ -443,7 +480,7 @@ void updateBonuses() {
             }
         }
 
-        rocket_spawn_timer += 50;
+        rocket_spawn_timer += 100; // Adjusted to 100ms
         if (!bonusrocket && rocket_spawn_timer >= 12000) {
             bonusrocket = true;
             bonusrocketx = getNonOverlappingXPosition(bonushpx * bonushp, bonusshieldx * bonusshield, 100);
@@ -467,7 +504,7 @@ void updateBonuses() {
             }
         }
 
-        shield_spawn_timer += 50;
+        shield_spawn_timer += 100; // Adjusted to 100ms
         if (!bonusshield && shield_spawn_timer >= 17000) {
             bonusshield = true;
             bonusshieldx = getNonOverlappingXPosition(bonushpx * bonushp, bonusrocketx * bonusrocket, 100);
@@ -522,14 +559,25 @@ void enem_shoot() {
                 }
             }
         }
+        if (enem6_active && !enem6_exploding) {
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (!e6bullet_active[i]) {
+                    e6bullet_x[i] = enem6_x - 200;
+                    e6bullet_y[i] = enem6_y ;
+                    iSetSpritePosition(&e6bulsprite[i], e6bullet_x[i], e6bullet_y[i]);
+                    e6bullet_active[i] = 1;
+                    break;
+                }
+            }
+        }
     }
 }
 
 void updateEnemy() {
     if (game_paused) return;
     if (gamestate == 21) {
-        if (!enem1_active && !enem1_exploding) {
-            enem1_respawn_timer += 50;
+        if (!enem1_active && !enem1_exploding && !enem6_active) {
+            enem1_respawn_timer += 100; // Adjusted to 100ms
             if (enem1_respawn_timer >= 1000) {
                 enem1_active = true;
                 enem1_x = 1200;
@@ -542,20 +590,33 @@ void updateEnemy() {
                 enem1_fire_timer = 0;
             }
         }
-        if (enem1_active && !enem1_exploding) {
+          if (!enem1_active && !enem1_exploding && enem6_active) {
+            enem1_respawn_timer += 100; // Adjusted to 100ms
+            if (enem1_respawn_timer >= 1000) {
+                enem1_active = true;
+                enem1_x = 1200;
+                enem1_y =600;
+                iSetSpritePosition(&enem1, enem1_x, enem1_y);
+                iChangeSpriteFrames(&enem1, e1idle, 1);
+                enem1_respawn_timer = 0;
+                enem1_fire_timer = 0;
+            }
+        }
+        if (enem1_active && !enem1_exploding ) {
             enem1_x -= 10;
+           
             iSetSpritePosition(&enem1, enem1_x, enem1_y);
             if (enem1_x < -100) {
                 enem1_active = false;
             }
-            enem1_fire_timer += 50;
+            enem1_fire_timer += 50; // Adjusted to 100ms
             if (enem1_fire_timer >= 1000) {
                 enem_shoot();
                 enem1_fire_timer = 0;
             }
         }
-        if (!enem2_active && !enem2_exploding) {
-            enem2_respawn_timer += 50;
+        if (!enem2_active && !enem2_exploding && !enem6_active) {
+            enem2_respawn_timer += 100; // Adjusted to 100ms
             if (enem2_respawn_timer >= 1000) {
                 enem2_active = true;
                 enem2hp = 4;
@@ -569,39 +630,64 @@ void updateEnemy() {
                 enem2_fire_timer = 0;
             }
         }
+         if (!enem2_active && !enem2_exploding && enem6_active) {
+            enem2_respawn_timer += 100; // Adjusted to 100ms
+            if (enem2_respawn_timer >= 1000) {
+                enem2_active = true;
+                enem2hp = 4;
+                enem2_x = 1200;
+               enem2_y =30;
+                iSetSpritePosition(&enem2, enem2_x, enem2_y);
+                iChangeSpriteFrames(&enem2, e2idle, 1);
+                enem2_respawn_timer = 0;
+                enem2_fire_timer = 0;
+            }
+        }
         if (enem2_active && !enem2_exploding) {
             enem2_x -= 10;
+            
             iSetSpritePosition(&enem2, enem2_x, enem2_y);
             if (enem2_x < -100) {
                 enem2_active = false;
             }
-            enem2_fire_timer += 50;
+            enem2_fire_timer += 50; // Adjusted to 100ms
             if (enem2_fire_timer >= 1000) {
                 enem_shoot();
                 enem2_fire_timer = 0;
             }
         }
-        // MODIFIED: Removed scorenumber++ to prevent unintended score increment
-        // Score is now only incremented in checkBulletEnemyCollision
+        if (scorenumber >= 500) {
+            enem6_active = true;
+        }
+        if (enem6_active && !enem6_exploding) {
+            enem6_x -= 10;
+            iSetSpritePosition(&enem6, enem6_x, enem6_y);
+            if (enem6_x < 800) {
+                enem6_x = 800;
+            }
+            enem6_fire_timer += 50; // Adjusted to 100ms
+            if (enem6_fire_timer >= 1000) {
+                enem_shoot();
+                enem6_fire_timer = 0;
+            }
+        }
     }
 }
 
 void updateEnemyExplosion() {
     if (game_paused) return;
     if (enem1_exploding) {
-        printf("Enemy1 explosion frame: %d\n", enem1_exp_idx); // NEW: Debug output
         enem1_exp_idx++;
         if (enem1_exp_idx < 10) {
-            iChangeSpriteFrames(&enem1, e1exp, 10); // Set explosion frames each frame
-            enem1.currentFrame = enem1_exp_idx; // Set current frame
-            iSetSpritePosition(&enem1, enem1_x, enem1_y); // Ensure position is maintained
+            iChangeSpriteFrames(&enem1, e1exp, 10);
+            enem1.currentFrame = enem1_exp_idx;
+            iSetSpritePosition(&enem1, enem1_x, enem1_y);
         } else {
-            printf("Enemy1 explosion complete, deactivating\n"); // NEW: Debug output
             enem1_exploding = false;
             enem1_active = false;
             enem1_exp_idx = 0;
-            iChangeSpriteFrames(&enem1, e1idle, 1); // Reset to idle
-            enem1_x = 1200; // Reset position
+            iChangeSpriteFrames(&enem1, e1idle, 1);
+            enem1_x = 1200;
             enem1_y = rand() % SCREEN_HEIGHT;
             if (enem1_y > SCREEN_HEIGHT - 100) enem1_y = SCREEN_HEIGHT - 250;
             else if (enem1_y < 50) enem1_y = 50;
@@ -609,28 +695,38 @@ void updateEnemyExplosion() {
         }
     }
     if (enem2_exploding) {
-        printf("Enemy2 explosion frame: %d\n", enem2_exp_idx); // NEW: Debug output
         enem2_exp_idx++;
         if (enem2_exp_idx < 12) {
-            iChangeSpriteFrames(&enem2, e2exp, 12); // Set explosion frames each frame
-            enem2.currentFrame = enem2_exp_idx; // Set current frame
-            iSetSpritePosition(&enem2, enem2_x, enem2_y); // Ensure position is maintained
+            iChangeSpriteFrames(&enem2, e2exp, 12);
+            enem2.currentFrame = enem2_exp_idx;
+            iSetSpritePosition(&enem2, enem2_x, enem2_y);
         } else {
-            printf("Enemy2 explosion complete, deactivating\n"); // NEW: Debug output
             enem2_exploding = false;
             enem2_active = false;
             enem2_exp_idx = 0;
-            enem2hp = 4; // Reset health
-            iChangeSpriteFrames(&enem2, e2idle, 1); // Reset to idle
-            enem2_x = 1200; // Reset position
+            enem2hp = 4;
+            iChangeSpriteFrames(&enem2, e2idle, 1);
+            enem2_x = 1200;
             if (enem1_y > 350) enem2_y = enem1_y - 400;
             else enem2_y = enem1_y + 300;
             if (enem2_y > SCREEN_HEIGHT - 100) enem2_y = SCREEN_HEIGHT - 250;
             iSetSpritePosition(&enem2, enem2_x, enem2_y);
         }
     }
+    if (enem6_exploding) {
+        enem6_exp_idx++;
+        if (enem6_exp_idx < 12) {
+            iChangeSpriteFrames(&enem6, e6exp, 11);
+            enem6.currentFrame = enem6_exp_idx;
+            iSetSpritePosition(&enem6, enem6_x, enem6_y);
+        }
+        if(enem6_exp_idx >= 11) {
+            enem6_exploding = false;
+            enem6_active = false;
+            gamestate = 211;
+    }
 }
-
+}
 void checkshieldcollision() {
     if (game_paused) return;
     if (shield_active) {
@@ -660,8 +756,20 @@ void checkshieldcollision() {
                 }
             }
         }
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (e6bullet_active[i]) {
+                if (iCheckCollision(&shieldsprt, &e6bulsprite[i])) {
+                    e6bullet_active[i] = 0;
+                    shield_hp-=3;
+                    if (shield_hp <= 0) {
+                        shield_active = false;
+                        shield_hp = 3;
+                        iSetSpritePosition(&shieldsprt, -100, -100);
+                    }
+                }
+            }
+        }
         if (iCheckCollision(&shieldsprt, &met)) {
-            
             meteor = false;
             iSetSpritePosition(&met, -100, -100);
             meteor_spawn_timer = 0;
@@ -684,7 +792,7 @@ void checkshieldcollision() {
                 iSetSpritePosition(&shieldsprt, -100, -100);
             }
         }
-        if (iCheckCollision(&shieldsprt, &enem2)) {
+          if (iCheckCollision(&shieldsprt, &enem2)) {
             enem2_active = false;
             enem2_exploding = true;
             enem2_exp_idx = 0;
@@ -696,15 +804,22 @@ void checkshieldcollision() {
                 iSetSpritePosition(&shieldsprt, -100, -100);
             }
         }
+        if (iCheckCollision(&shieldsprt, &enem6)) {
+            shield_hp -= 3;
+            if (shield_hp <= 0) {
+                shield_active = false;
+                shield_hp = 3;
+                iSetSpritePosition(&shieldsprt, -100, -100);
+            }
+        }
     }
 }
 
-void checkEnemSpaceCollision() {
+void  checkEnemSpaceCollision() {
     if (just_reset) return;
     if (game_paused) return;
     if (gamestate == 21) {
         if (iCheckCollision(&spaceship, &enem1) && !shield_active && !shipexp) {
-            printf("Collision with enemy1 at spaceship (%d, %d), enemy1 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
             enem1_active = false;
             enem1_exploding = true;
             enem1_exp_idx = 0;
@@ -716,7 +831,6 @@ void checkEnemSpaceCollision() {
             spaceship.currentFrame = 0;
         }
         if (iCheckCollision(&spaceship, &enem2) && !shield_active && !shipexp) {
-            printf("Collision with enemy2 at spaceship (%d, %d), enemy2 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
             enem2_active = false;
             enem2_exploding = true;
             enem2_exp_idx = 0;
@@ -727,13 +841,19 @@ void checkEnemSpaceCollision() {
             iChangeSpriteFrames(&spaceship, s_exp, 7);
             spaceship.currentFrame = 0;
         }
-        if (meteor && iCheckCollision(&spaceship, &met) && !shield_active && !shipexp) { // MODIFIED: Check meteor state first
-            printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
+        if (meteor && iCheckCollision(&spaceship, &met) && !shield_active && !shipexp) {
             meteor = false;
             meteor_spawn_timer = 0;
-            metx = 550; // NEW: Reset position immediately
+            metx = 550;
             mety = 1000;
-            iSetSpritePosition(&met, metx, mety); // NEW: Update sprite position
+            iSetSpritePosition(&met, metx, mety);
+            shipexp = true;
+            ship_state = EXP;
+            exp_idx = 0;
+            iChangeSpriteFrames(&spaceship, s_exp, 7);
+            spaceship.currentFrame = 0;
+        }
+        if (iCheckCollision(&spaceship, &enem6) && !shield_active && !shipexp) {
             shipexp = true;
             ship_state = EXP;
             exp_idx = 0;
@@ -770,60 +890,102 @@ void checkBulletEnemyCollision() {
     if (game_paused) return;
     if (gamestate == 21) {
         if (enem1_active && !enem1_exploding) {
+            int enem1_w = 100; // Adjust based on sprite size
+            int enem1_h = 100;
             for (int i = 0; i < MAX_BULLETS; i++) {
                 if (bullet_active[i]) {
-                    if (iCheckCollision(&bullet_sprites[i], &enem1)) {
-                        bullet_active[i] = 0;
-                        enem1_active = false;
-                        enem1_exploding = true;
-                        scorenumber += 100;
-                        sprintf(scoretext, "%d", scorenumber);
-                        enem1_exp_idx = 0;
-                        iChangeSpriteFrames(&enem1, e1exp, 10);
-                        iSetSpritePosition(&enem1, enem1_x, enem1_y);
-                    }
-                }
-            }
-        }
-        if (enem2_active && !enem2_exploding) {
-            for (int i = 0; i < MAX_BULLETS; i++) {
-                if (bullet_active[i]) {
-                    if (iCheckCollision(&bullet_sprites[i], &enem2)) {
-                        bullet_active[i] = 0;
-                        enem2hp--;
-                        if (enem2hp <= 0) {
-                            enem2_active = false;
-                            enem2_exploding = true;
+                    int bullet_w = 10; // Adjust based on sprite size
+                    int bullet_h = 10;
+                    if (boundingBoxCollision(bullet_x[i], bullet_y[i], bullet_w, bullet_h, enem1_x, enem1_y, enem1_w, enem1_h)) {
+                        if (iCheckCollision(&bullet_sprites[i], &enem1)) {
+                            bullet_active[i] = 0;
+                            enem1_active = false;
+                            enem1_exploding = true;
                             scorenumber += 100;
                             sprintf(scoretext, "%d", scorenumber);
-                            enem2_exp_idx = 0;
-                            iChangeSpriteFrames(&enem2, e2exp, 12);
-                            iSetSpritePosition(&enem2, enem2_x, enem2_y);
+                            enem1_exp_idx = 0;
+                            iChangeSpriteFrames(&enem1, e1exp, 10);
+                            iSetSpritePosition(&enem1, enem1_x, enem1_y);
                         }
                     }
                 }
             }
         }
-        if (meteor) {
-    for (int i = 0; i < MAX_BULLETS; i++) {
-        if (bullet_active[i]) {
-            if (iCheckCollision(&bullet_sprites[i], &met)) {
-                printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], metx, mety); // NEW: Debug output
-                bullet_active[i] = 0;
-                bullet_x[i] = -100; // NEW: Move bullet off-screen
-                bullet_y[i] = -100;
-                iSetSpritePosition(&bullet_sprites[i], -100, -100);
-                meteor = false;
-                meteor_spawn_timer = 0;
-                metx = 550; // NEW: Reset meteor position
-                mety = 1000;
-                iSetSpritePosition(&met, metx, mety); // NEW: Update sprite position
-                scorenumber += 50;
-                sprintf(scoretext, "%d", scorenumber);
+        if (enem2_active && !enem2_exploding) {
+            int enem2_w = 170; // Adjusted for scale 1.7
+            int enem2_h = 170;
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    //int bullet_w = 10;
+                    //int bullet_h = 10;
+                    //if (boundingBoxCollision(bullet_x[i], bullet_y[i], bullet_w, bullet_h, enem2_x, enem2_y, enem2_w, enem2_h)) {
+                        if (iCheckCollision(&bullet_sprites[i], &enem2)) {
+                            bullet_active[i] = 0;
+                            enem2hp--;
+                            if (enem2hp <= 0) {
+                                enem2_active = false;
+                                enem2_exploding = true;
+                                scorenumber += 100;
+                                sprintf(scoretext, "%d", scorenumber);
+                                enem2_exp_idx = 0;
+                                iChangeSpriteFrames(&enem2, e2exp, 12);
+                                iSetSpritePosition(&enem2, enem2_x, enem2_y);
+                            }
+                        }
+                    //}
+                }
             }
         }
-    }
-}
+        if (meteor) {
+            int met_w = 90; // Adjusted for scale 0.3
+            int met_h = 90;
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    int bullet_w = 10;
+                    int bullet_h = 10;
+                    if (boundingBoxCollision(bullet_x[i], bullet_y[i], bullet_w, bullet_h, metx, mety, met_w, met_h)) {
+                        if (iCheckCollision(&bullet_sprites[i], &met)) {
+                            bullet_active[i] = 0;
+                            bullet_x[i] = -100;
+                            bullet_y[i] = -100;
+                            iSetSpritePosition(&bullet_sprites[i], -100, -100);
+                            meteor = false;
+                            meteor_spawn_timer = 0;
+                            metx = 550;
+                            mety = 1000;
+                            iSetSpritePosition(&met, metx, mety);
+                            scorenumber += 50;
+                            sprintf(scoretext, "%d", scorenumber);
+                        }
+                    }
+                }
+            }
+        }
+        if (enem6_active && !enem6_exploding) {
+            int enem6_w = 220; // Adjusted for scale 2.2
+            int enem6_h = 220;
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (bullet_active[i]) {
+                    int bullet_w = 10;
+                    int bullet_h = 10;
+                    if (boundingBoxCollision(bullet_x[i], bullet_y[i], bullet_w, bullet_h, enem6_x, enem6_y, enem6_w, enem6_h)) {
+                        if (iCheckCollision(&bullet_sprites[i], &enem6)) {
+                            bullet_active[i] = 0;
+                            enem6hp--;
+                            if (enem6hp <= 0) {
+                                enem6_active = false;
+                                enem6_exploding = true;
+                                scorenumber += 1000;
+                                sprintf(scoretext, "%d", scorenumber);
+                                enem6_exp_idx = 0;
+                                iChangeSpriteFrames(&enem6, e6exp, 11);
+                                iSetSpritePosition(&enem6, enem6_x, enem6_y);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -835,14 +997,13 @@ void enemBulletCollision() {
         if (current_time < invincibility_end_time) {
             return;
         }
-        bool hit_this_frame = false; // NEW: Track if a hit occurs to enforce invincibility
+        bool hit_this_frame = false;
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp) {
-                printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]); // MODIFIED: Include bullet index
                 ebullet_active[i] = 0;
-                ebullet_x[i] = -100; // NEW: Update position variable
+                ebullet_x[i] = -100;
                 ebullet_y[i] = -100;
-                iSetSpritePosition(&ebulsprite[i], -100, -100); // Move bullet off-screen
+                iSetSpritePosition(&ebulsprite[i], -100, -100);
                 if (!shield_active) {
                     health--;
                 } else {
@@ -853,16 +1014,15 @@ void enemBulletCollision() {
                         iSetSpritePosition(&shieldsprt, -100, -100);
                     }
                 }
-                hit_this_frame = true; // NEW: Mark hit to trigger invincibility
+                hit_this_frame = true;
             }
         }
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i]) && !shipexp) {
-                printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]); // MODIFIED: Include bullet index
                 e2bullet_active[i] = 0;
-                e2bullet_x[i] = -100; // NEW: Update position variable
+                e2bullet_x[i] = -100;
                 e2bullet_y[i] = -100;
-                iSetSpritePosition(&e2bulsprite[i], -100, -100); // Move bullet off-screen
+                iSetSpritePosition(&e2bulsprite[i], -100, -100);
                 if (!shield_active) {
                     health--;
                 } else {
@@ -873,13 +1033,31 @@ void enemBulletCollision() {
                         iSetSpritePosition(&shieldsprt, -100, -100);
                     }
                 }
-                hit_this_frame = true; // NEW: Mark hit to trigger invincibility
+                hit_this_frame = true;
             }
         }
-        if (hit_this_frame) { // NEW: Apply invincibility and check health once per frame
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (e6bullet_active[i] && iCheckCollision(&spaceship, &e6bulsprite[i]) && !shipexp) {
+                e6bullet_active[i] = 0;
+                e6bullet_x[i] = -100;
+                e6bullet_y[i] = -100;
+                iSetSpritePosition(&e6bulsprite[i], -100, -100);
+                if (!shield_active) {
+                    health--;
+                } else {
+                    shield_hp -= 3;
+                    if (shield_hp <= 0) {
+                        shield_active = false;
+                        shield_hp = 3;
+                        iSetSpritePosition(&shieldsprt, -100, -100);
+                    }
+                }
+                hit_this_frame = true;
+            }
+        }
+        if (hit_this_frame) {
             invincibility_end_time = current_time + 500;
             if (health <= 0) {
-                printf("Health <= 0, triggering explosion\n");
                 shipexp = true;
                 ship_state = EXP;
                 exp_idx = 0;
@@ -920,6 +1098,7 @@ void mainpage1() {
     iShowLoadedImage2(1060, 615, &score);
     if (enem1_active || enem1_exploding) iShowSprite(&enem1);
     if (enem2_active || enem2_exploding) iShowSprite(&enem2);
+    if (enem6_active || enem6_exploding) iShowSprite(&enem6);
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullet_active[i]) {
             iShowSprite(&bullet_sprites[i]);
@@ -933,6 +1112,11 @@ void mainpage1() {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (e2bullet_active[i]) {
             iShowSprite(&e2bulsprite[i]);
+        }
+    }
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (e6bullet_active[i]) { // Removed enem6_x <= 400 condition
+            iShowSprite(&e6bulsprite[i]);
         }
     }
     iText(1150, 650, scoretext, GLUT_BITMAP_TIMES_ROMAN_24);
@@ -969,7 +1153,7 @@ void mainpage1() {
             else if (display_number == 0) iShowLoadedImage(180, 630, &num0);
         }
     }
-    just_reset = false; // MODIFIED: Moved to timer to control duration
+    just_reset = false;
 }
 
 void moveBullets() {
@@ -980,9 +1164,9 @@ void moveBullets() {
             iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
             if (bullet_x[i] > SCREEN_WIDTH) {
                 bullet_active[i] = 0;
-                bullet_x[i] = -100; // NEW: Update position variable
+                bullet_x[i] = -100;
                 bullet_y[i] = -100;
-                iSetSpritePosition(&bullet_sprites[i], -100, -100); // Move off-screen
+                iSetSpritePosition(&bullet_sprites[i], -100, -100);
             }
         }
     }
@@ -992,9 +1176,9 @@ void moveBullets() {
             iSetSpritePosition(&ebulsprite[i], ebullet_x[i], ebullet_y[i]);
             if (ebullet_x[i] < 0) {
                 ebullet_active[i] = 0;
-                ebullet_x[i] = -100; // NEW: Update position variable
+                ebullet_x[i] = -100;
                 ebullet_y[i] = -100;
-                iSetSpritePosition(&ebulsprite[i], -100, -100); // Move off-screen
+                iSetSpritePosition(&ebulsprite[i], -100, -100);
             }
         }
     }
@@ -1004,9 +1188,21 @@ void moveBullets() {
             iSetSpritePosition(&e2bulsprite[i], e2bullet_x[i], e2bullet_y[i]);
             if (e2bullet_x[i] < 0) {
                 e2bullet_active[i] = 0;
-                e2bullet_x[i] = -100; // NEW: Update position variable
+                e2bullet_x[i] = -100;
                 e2bullet_y[i] = -100;
-                iSetSpritePosition(&e2bulsprite[i], -100, -100); // Move off-screen
+                iSetSpritePosition(&e2bulsprite[i], -100, -100);
+            }
+        }
+    }
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (e6bullet_active[i]) {
+            e6bullet_x[i] -= 15; // Reduced speed from 30 to 15
+            iSetSpritePosition(&e6bulsprite[i], e6bullet_x[i], e6bullet_y[i]);
+            if (e6bullet_x[i] < -170) {
+                e6bullet_active[i] = 0;
+                e6bullet_x[i] = -100;
+                e6bullet_y[i] = -100;
+                iSetSpritePosition(&e6bulsprite[i], -100, -100);
             }
         }
     }
@@ -1295,28 +1491,28 @@ void timer() {
     updateEnemy();
     updateEnemyExplosion();
     updatemeteor();
-    if (just_reset && just_reset_timer > 0) { // NEW: Manage just_reset duration
-        just_reset_timer -= 50;
+    if (just_reset && just_reset_timer > 0) {
+        just_reset_timer -= 100; // Adjusted to 100ms
         if (just_reset_timer <= 0) {
             just_reset = false;
         }
     }
     if (gamestate == 211) {
         gocount = (gocount + 1) % 8;
-        scorecolourtimer += 50;
+        scorecolourtimer += 100; // Adjusted to 100ms
         if (scorecolourtimer >= 1000) {
             scorecolour = (scorecolour + 1) % 3;
             scorecolourtimer = 0;
         }
     }
-    if (gamestate == 21) { // NEW: Increment score every second during gameplay
-    survival_score_timer += 50;
-    if (survival_score_timer >= 70) { // 1000ms = 1 second
-        scorenumber += 1; // Increment score by 1 point per second
-        sprintf(scoretext, "%d", scorenumber);
-        survival_score_timer = 0;
+    if (gamestate == 21) {
+        survival_score_timer += 100; // Adjusted to 100ms
+        if (survival_score_timer >= 70) {
+            scorenumber += 1;
+            sprintf(scoretext, "%d", scorenumber);
+            survival_score_timer = 0;
+        }
     }
-}
 }
 
 int main(int argc, char *argv[]) {
@@ -1325,8 +1521,8 @@ int main(int argc, char *argv[]) {
     loadresources();
     sound_manage();
     iInitializeFont();
-    timer_id = iSetTimer(50, timer);
-    animation_timer_id = iSetTimer(100, updateAnimation); // 100ms for smoother animation
+    timer_id = iSetTimer(50, timer); // Increased from 50ms to 100ms
+    animation_timer_id = iSetTimer(100, updateAnimation);
     iOpenWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Galaxy-Annihilator");
     return 0;
 }
