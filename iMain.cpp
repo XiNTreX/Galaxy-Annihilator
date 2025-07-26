@@ -3,6 +3,9 @@
 #include "iSound.h"
 #include <stdlib.h>
 #include "iFont.h"
+#include <stdio.h>
+#include <string.h>
+
 using namespace std;
 
 //=============================================================================
@@ -12,7 +15,7 @@ using namespace std;
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 700
 #define MAX_BULLETS 50
-#define MAX_NAME_LENGTH 20                  // Maximum length for player name
+#define MAX_NAME_LENGTH 12                  // Maximum length for player name
 char player_name[MAX_NAME_LENGTH + 1] = ""; // +1 for null terminator
 int name_length = 0;
 //=============================================================================
@@ -40,7 +43,10 @@ typedef enum
     SOUND,
     QUIT,
     GAMEOVER,
-    NAME
+    NAME,
+    ARCADE_SCORE,
+    BOSS_SCORE,
+    ENDLESS_SCORE
 } game;
 game gamestate;
 //=============================================================================
@@ -63,7 +69,7 @@ int scorecolourtimer = 0;
 int survival_score_timer = 0;
 int gocount = 0;
 int wrap;
-
+int arcade_score, boss_score, endless_score;
 // Player Variables
 int move_ud = 280, move_lf = 0;
 int health = 3;
@@ -199,7 +205,7 @@ Image gameoverscreen, score1, score2, score3;
 Image go1, go2, go3, go4, go5, go6, go7, go8;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
 Image home, mode, help, controls, quit, sound, name;
-
+Image ascore, bscore, lscore;
 // Spaceship Images and Sprites
 Image idle[1], bullet_img[1];
 Image s_boost[6], s_exp[7], s_shoot[4];
@@ -521,6 +527,9 @@ void loadresources()
     iLoadImage(&sound, "assets/images/gamestate/sound.png");
     iLoadImage(&quit, "assets/images/gamestate/quit.png");
     iLoadImage(&name, "assets/images/gamestate/name.png");
+    iLoadImage(&ascore, "assets/images/gamestate/score.png");
+    iLoadImage(&bscore, "assets/images/gamestate/score.png");
+    iLoadImage(&lscore, "assets/images/gamestate/score.png");
 
     iLoadImage(&mainbg, "assets/images/mainbg.png");
     iLoadImage(&mainbg2, "assets/images/endlessbg.jpg");
@@ -737,7 +746,9 @@ void updateAnimation()
             shipexp = false;
             ship_state = IDLE;
             prev_gamestate = gamestate;
-
+            if (gamestate == ARCADE) arcade_score = scorenumber;
+            else if (gamestate == BOSS) boss_score = scorenumber;
+            else if (gamestate == ENDLESS) endless_score = scorenumber;
             gamestate = GAMEOVER;
             iChangeSpriteFrames(&spaceship, idle, 1);
             exp_idx = 0;
@@ -2398,7 +2409,7 @@ void checkBulletEnemyCollision()
                             bosshp--;
                         if (gamestate == BOSS)
                         {
-                            scorenumber += 100;
+                            scorenumber += 5;
                             sprintf(scoretext, "%d", scorenumber);
                         }
                         if (enem6hp <= 0 || bosshp <= 0)
@@ -3173,10 +3184,13 @@ void iDraw()
     case QUIT:
         iShowLoadedImage(0, 0, &quit);
         break;
+    case LEADERBOARD:
+        difficulty();
+        break;
     case NAME:
         iShowLoadedImage(0, 0, &name);
         iSetColor(255, 255, 255);
-        iShowText(500, 300, player_name, "assets/fonts/Orbitron-Medium.ttf");
+        iShowText(450, 253, player_name, "assets/fonts/Orbitron-Medium.ttf", 40);
         break;
     case ARCADE:
         mainpage1();
@@ -3307,6 +3321,23 @@ void iMouse(int button, int state, int mx, int my)
             {
                 prev_gamestate = ENDLESS;
                 gamestate = NAME;
+            }
+
+            break;
+        case LEADERBOARD:
+
+            if ((424 <= mx && mx <= 775) && (355 <= my && my <= 415))
+            {
+                gamestate = ARCADE_SCORE;
+                
+            }
+            else if ((424 <= mx && mx <= 775) && (225 <= my && my <= 285))
+            {
+                gamestate = BOSS_SCORE;
+            }
+            else if ((424 <= mx && mx <= 775) && (95 <= my && my <= 155))
+            {
+                gamestate = ENDLESS_SCORE;
             }
 
             break;
@@ -3453,98 +3484,79 @@ void iMouse(int button, int state, int mx, int my)
 
 void iMouseWheel(int dir, int mx, int my) {}
 
-void iKeyboard(unsigned char key, int state)
+// Keyboard Functions
+void iKeyPress(unsigned char key)
 {
-    if (state == GLUT_DOWN)
+    if (gamestate == NAME)
     {
-        if (gamestate == NAME)
+        if (key == 8) // Backspace
         {
-            if (key == 8) // Backspace
+            if (name_length > 0)
             {
-                if (name_length > 0)
-                {
-                    player_name[--name_length] = '\0';
-                }
+                player_name[--name_length] = '\0';
             }
-            else if (name_length < MAX_NAME_LENGTH && ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9')))
-            {
-                player_name[name_length++] = key;
-                player_name[name_length] = '\0';
-            }
-            // Ignore game control keys in NAME state
-            return;
         }
-        switch (key)
+        else if (name_length < MAX_NAME_LENGTH && ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9')))
         {
-        case 'q':
-            if (homeidx != -1)
-                iStopSound(homeidx);
-            if (mainidx != -1)
-                iStopSound(mainidx);
-            iCloseWindow();
-        case 'w':
-            key_w = true;
-            break;
-        case 's':
-            key_s = true;
-            break;
-        case 'a':
-            key_a = true;
-            break;
-        case 'd':
-            key_d = true;
-            break;
-        case 'p':
-            if (ship_state != EXP)
+            player_name[name_length++] = key;
+            player_name[name_length] = '\0';
+        }
+        return;
+    }
+
+    switch (key)
+    {
+    case 'q':
+        if (homeidx != -1)
+            iStopSound(homeidx);
+        if (mainidx != -1)
+            iStopSound(mainidx);
+        iCloseWindow();
+        break;
+    case 'w':
+        key_w = true;
+        break;
+    case 's':
+        key_s = true;
+        break;
+    case 'a':
+        key_a = true;
+        break;
+    case 'd':
+        key_d = true;
+        break;
+    case 'p':
+        if (ship_state != EXP)
+        {
+            ship_state = SHOOT;
+            iChangeSpriteFrames(&spaceship, s_shoot, 4);
+            iAnimateSprite(&spaceship);
+            if (rocket_powerup_active)
             {
-                ship_state = SHOOT;
-                iChangeSpriteFrames(&spaceship, s_shoot, 4);
-                iAnimateSprite(&spaceship);
-                if (rocket_powerup_active)
+                if (rocket_powerup_count >= 2)
                 {
-                    if (rocket_powerup_count >= 2)
+                    // Spread pattern for second power-up
+                    int num_bullets = 5;
+                    double angles[5] = {-15.0, -7.5, 0.0, 7.5, 15.0};
+                    int fired = 0;
+                    for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++)
                     {
-                        // Spread pattern for second power-up
-                        int num_bullets = 5;
-                        double angles[5] = {-15.0, -7.5, 0.0, 7.5, 15.0};
-                        int fired = 0;
-                        for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++)
+                        if (!bullet_active[i])
                         {
-                            if (!bullet_active[i])
-                            {
-                                bullet_x[i] = move_lf + 190;
-                                bullet_y[i] = move_ud + 83;
-                                bullet_angle[i] = angles[fired];
-                                iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
-                                bullet_active[i] = 1;
-                                fired++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Parallel lines for first power-up
-                        int num_bullets = 5;
-                        int y_offsets[5] = {83 + 30, 83 + 15, 83, 83 - 15, 83 - 30};
-                        int fired = 0;
-                        for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++)
-                        {
-                            if (!bullet_active[i])
-                            {
-                                bullet_x[i] = move_lf + 190;
-                                bullet_y[i] = move_ud + y_offsets[fired];
-                                bullet_angle[i] = 0.0; // No angle for parallel
-                                iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
-                                bullet_active[i] = 1;
-                                fired++;
-                            }
+                            bullet_x[i] = move_lf + 190;
+                            bullet_y[i] = move_ud + 83;
+                            bullet_angle[i] = angles[fired];
+                            iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+                            bullet_active[i] = 1;
+                            fired++;
                         }
                     }
                 }
                 else
                 {
-                    int num_bullets = 2;
-                    int y_offsets[2] = {90, 77};
+                    // Parallel lines for first power-up
+                    int num_bullets = 5;
+                    int y_offsets[5] = {83 + 30, 83 + 15, 83, 83 - 15, 83 - 30};
                     int fired = 0;
                     for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++)
                     {
@@ -3552,7 +3564,7 @@ void iKeyboard(unsigned char key, int state)
                         {
                             bullet_x[i] = move_lf + 190;
                             bullet_y[i] = move_ud + y_offsets[fired];
-                            bullet_angle[i] = 0.0; // No angle for default
+                            bullet_angle[i] = 0.0; // No angle for parallel
                             iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
                             bullet_active[i] = 1;
                             fired++;
@@ -3560,138 +3572,136 @@ void iKeyboard(unsigned char key, int state)
                     }
                 }
             }
-            break;
-        case 'f':
-            if (fullscreen == 0)
-            {
-                iEnterFullscreen();
-                fullscreen++;
-            }
             else
             {
-                iLeaveFullscreen();
-                fullscreen--;
-            }
-            break;
-            /*case 'o':
-                if (gamestate == 21)
+                int num_bullets = 2;
+                int y_offsets[2] = {90, 77};
+                int fired = 0;
+                for (int i = 0; i < MAX_BULLETS && fired < num_bullets; i++)
                 {
-                    game_paused = !game_paused;
-                    if (game_paused)
+                    if (!bullet_active[i])
                     {
-                        iPauseTimer(timer_id);
-                        iPauseTimer(animation_timer_id);
-                        if (sound_check == 0)
-                        {
-                            iPauseSound(mainidx);
-                        }
-                    }
-                    else
-                    {
-                        iResumeTimer(timer_id);
-                        iResumeTimer(animation_timer_id);
-                        if (sound_check == 0)
-                        {
-                            iResumeSound(mainidx);
-                        }
+                        bullet_x[i] = move_lf + 190;
+                        bullet_y[i] = move_ud + y_offsets[fired];
+                        bullet_angle[i] = 0.0; // No angle for default
+                        iSetSpritePosition(&bullet_sprites[i], bullet_x[i], bullet_y[i]);
+                        bullet_active[i] = 1;
+                        fired++;
                     }
                 }
-                break;*/
+            }
         }
-    }
-    else if (state == GLUT_UP)
-    {
-        switch (key)
+        break;
+    case 'f':
+        if (fullscreen == 0)
         {
-        case 'w':
-            key_w = false;
-            break;
-        case 's':
-            key_s = false;
-            break;
-        case 'a':
-            key_a = false;
-            break;
-        case 'd':
-            key_d = false;
-            break;
-        case 'p':
-            if (ship_state != EXP)
+            iEnterFullscreen();
+            fullscreen++;
+        }
+        else
+        {
+            iLeaveFullscreen();
+            fullscreen--;
+        }
+        break;
+    }
+}
+
+void iKeyRelease(unsigned char key)
+{
+    if (gamestate == NAME)
+    {
+        if (key == 13 && name_length > 0) // Enter key, only proceed if name is not empty
+        {
+            gamestate = prev_gamestate;
+            sound_manage();
+        }
+        return;
+    }
+
+    switch (key)
+    {
+    case 'w':
+        key_w = false;
+        break;
+    case 's':
+        key_s = false;
+        break;
+    case 'a':
+        key_a = false;
+        break;
+    case 'd':
+        key_d = false;
+        break;
+    case 'p':
+        if (ship_state != EXP)
+        {
+            ship_state = IDLE;
+            iChangeSpriteFrames(&spaceship, idle, 1);
+        }
+        break;
+    case 'm':
+        if (sound_check == 0)
+        {
+            if (gamestate == HOME || gamestate == MODE)
             {
-                ship_state = IDLE;
-                iChangeSpriteFrames(&spaceship, idle, 1);
+                iPauseSound(homeidx);
+                sound_check++;
             }
-            break;
-        case 'm':
-            if (sound_check == 0)
-            {
-                if (gamestate == HOME || gamestate == MODE)
-                {
-                    iPauseSound(homeidx);
-                    sound_check++;
-                }
-                if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
-                {
-                    iPauseSound(mainidx);
-                    sound_check++;
-                }
-            }
-            else
-            {
-                if (gamestate == HOME || gamestate == MODE)
-                {
-                    iResumeSound(homeidx);
-                    sound_check = 0;
-                }
-                if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
-                {
-                    iResumeSound(mainidx);
-                    sound_check = 0;
-                }
-            }
-            break;
-        case 27: // ESC key
             if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
             {
-                game_paused = true;
-                iPauseTimer(timer_id);
-                iPauseTimer(animation_timer_id);
-                if (sound_check == 0)
-                {
-                    iPauseSound(mainidx);
-                }
+                iPauseSound(mainidx);
+                sound_check++;
             }
-            if (gamestate == MODE || gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD)
-                gamestate = HOME;
-            if (gamestate == CONTROLS || gamestate == SOUND || gamestate == QUIT)
-                gamestate = HELP;
-            break;
-        case 13:
-            if (gamestate == NAME)
-            {
-                gamestate = prev_gamestate;
-                sound_manage();
-            }
-            break;
-        case 8: // Backspace
-            if (gamestate == NAME && name_length > 0)
-            {
-                player_name[--name_length] = '\0';
-            }
-            break;
-        default:
-            if (gamestate == NAME && name_length < MAX_NAME_LENGTH && ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9')))
-            {
-                player_name[name_length++] = key;
-                player_name[name_length] = '\0';
-            }
-            break;
         }
+        else
+        {
+            if (gamestate == HOME || gamestate == MODE)
+            {
+                iResumeSound(homeidx);
+                sound_check = 0;
+            }
+            if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
+            {
+                iResumeSound(mainidx);
+                sound_check = 0;
+            }
+        }
+        break;
+    case 27: // ESC key
+        if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
+        {
+            game_paused = true;
+            iPauseTimer(timer_id);
+            iPauseTimer(animation_timer_id);
+            if (sound_check == 0)
+            {
+                iPauseSound(mainidx);
+            }
+        }
+        if (gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD)
+            gamestate = HOME;
+        if (gamestate == CONTROLS || gamestate == SOUND || gamestate == QUIT)
+            gamestate = HELP;
+        if (gamestate == ARCADE_SCORE || gamestate == BOSS_SCORE || gamestate == ENDLESS_SCORE)
+            gamestate = LEADERBOARD;
+        break;
     }
 }
 
 void iSpecialKeyPress(unsigned char key)
 {
+    // Handle special keys (e.g., GLUT_KEY_LEFT, GLUT_KEY_RIGHT) if needed
+    switch (key)
+    {
+    default:
+        break;
+    }
+}
+
+void iSpecialKeyRelease(unsigned char key)
+{
+    // Handle special key releases if needed
     switch (key)
     {
     default:
