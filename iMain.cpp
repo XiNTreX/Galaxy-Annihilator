@@ -18,6 +18,21 @@ using namespace std;
 #define MAX_NAME_LENGTH 12                  // Maximum length for player name
 char player_name[MAX_NAME_LENGTH + 1] = ""; // +1 for null terminator
 int name_length = 0;
+#define MAX_LEADERBOARD_ENTRIES 7
+
+typedef struct {
+    char name[MAX_NAME_LENGTH + 1]; // Matches player_name size
+    int score;
+} LeaderboardEntry;
+
+LeaderboardEntry arcadeLeaderboard[MAX_LEADERBOARD_ENTRIES];
+LeaderboardEntry bossLeaderboard[MAX_LEADERBOARD_ENTRIES];
+LeaderboardEntry endlessLeaderboard[MAX_LEADERBOARD_ENTRIES];
+int arcadeCount = 0, bossCount = 0, endlessCount = 0; // Track number of entries
+
+#define ARCADE_SCORE_FILE "saves/arcade_scores.txt"
+#define BOSS_SCORE_FILE "saves/boss_scores.txt"
+#define ENDLESS_SCORE_FILE "saves/endless_scores.txt"
 //=============================================================================
 // ENUMS
 //=============================================================================
@@ -199,7 +214,7 @@ bool enem1_bul_active = false;
 //=============================================================================
 
 // UI Images
-Image mainbg, paused, mainbg2;
+Image mainbg, paused, mainbg2, abg;
 Image hp1, hp2, hp3, score;
 Image gameoverscreen, score1, score2, score3;
 Image go1, go2, go3, go4, go5, go6, go7, go8;
@@ -280,7 +295,60 @@ void iSpecialKeyPress(unsigned char key);
 //=============================================================================
 // GAME RESET FUNCTION
 //=============================================================================
+int compareLeaderboard(const void *a, const void *b) {
+    const LeaderboardEntry *entryA = (const LeaderboardEntry *)a;
+    const LeaderboardEntry *entryB = (const LeaderboardEntry *)b;
+    return entryB->score - entryA->score; // Descending
+}
 
+// Load leaderboard from file
+void loadLeaderboard(const char *filename, LeaderboardEntry *leaderboard, int *count) {
+    FILE *file = fopen(filename, "r");
+    *count = 0;
+    if (file) {
+        while (*count < MAX_LEADERBOARD_ENTRIES &&
+               fscanf(file, "%s %d", leaderboard[*count].name, &leaderboard[*count].score) == 2) {
+            (*count)++;
+        }
+        fclose(file);
+    }
+    // Sort after loading
+    qsort(leaderboard, *count, sizeof(LeaderboardEntry), compareLeaderboard);
+}
+
+// Save leaderboard to file
+void saveLeaderboard(const char *filename, LeaderboardEntry *leaderboard, int count) {
+    FILE *file = fopen(filename, "w");
+    if (file) {
+        for (int i = 0; i < count && i < MAX_LEADERBOARD_ENTRIES; i++) {
+            fprintf(file, "%s %d\n", leaderboard[i].name, leaderboard[i].score);
+        }
+        fclose(file);
+    }
+}
+
+// Add a new score to leaderboard
+void addScoreToLeaderboard(LeaderboardEntry *leaderboard, int *count, const char *name, int score) {
+    if (*count < MAX_LEADERBOARD_ENTRIES) {
+        // Add new entry
+        strcpy(leaderboard[*count].name, name);
+        leaderboard[*count].score = score;
+        (*count)++;
+    } else if (score > leaderboard[MAX_LEADERBOARD_ENTRIES - 1].score) {
+        // Replace lowest score if new score is higher
+        strcpy(leaderboard[MAX_LEADERBOARD_ENTRIES - 1].name, name);
+        leaderboard[MAX_LEADERBOARD_ENTRIES - 1].score = score;
+    }
+    // Sort leaderboard
+    qsort(leaderboard, *count, sizeof(LeaderboardEntry), compareLeaderboard);
+}
+
+// Initialize all leaderboards at game start
+void initLeaderboards() {
+    loadLeaderboard(ARCADE_SCORE_FILE, arcadeLeaderboard, &arcadeCount);
+    loadLeaderboard(BOSS_SCORE_FILE, bossLeaderboard, &bossCount);
+    loadLeaderboard(ENDLESS_SCORE_FILE, endlessLeaderboard, &endlessCount);
+}
 void resetGame()
 {
     wave_timer = 0;
@@ -346,8 +414,8 @@ void resetGame()
     enem4_exp_idx = 0;
     enem4_fire_timer = 0;
     enem4hp = 8;
-    iSetSpritePosition(&enem2, enem2_x, enem2_y);
-    iChangeSpriteFrames(&enem2, e2idle, 1);
+    iSetSpritePosition(&enem4, enem4_x, enem4_y);
+    iChangeSpriteFrames(&enem4, e4idle, 1);
 
     // Reset Enemy 5
     enem5_active = false;
@@ -532,6 +600,7 @@ void loadresources()
     iLoadImage(&lscore, "assets/images/gamestate/score.png");
 
     iLoadImage(&mainbg, "assets/images/mainbg.png");
+    iLoadImage(&abg, "assets/images/BG.png");
     iLoadImage(&mainbg2, "assets/images/endlessbg.jpg");
     // Load and Initialize Meteor Sprite
     iInitSprite(&met);
@@ -674,7 +743,7 @@ void loadresources()
 
     iInitSprite(&enem3);
     iScaleSprite(&enem3, 1.2);
-    iChangeSpriteFrames(&enem3, e2idle, 1);
+    iChangeSpriteFrames(&enem3, e3idle, 1);
     iSetSpritePosition(&enem3, enem3_x, enem3_y);
 
     iInitSprite(&enem4);
@@ -716,46 +785,50 @@ int getNonOverlappingXPosition(int existing_x1, int existing_x2, int min_distanc
 // ANIMATION AND MOVEMENT FUNCTIONS
 //=============================================================================
 
-void updateAnimation()
-{
+void updateAnimation() {
     if (game_paused)
         return;
 
-    if (ship_state == BOOST)
-    {
+    if (ship_state == BOOST) {
         boost_idx = (boost_idx + 1) % 6;
         iChangeSpriteFrames(&spaceship, s_boost, 6);
     }
-    if (ship_state == SHOOT)
-    {
+    if (ship_state == SHOOT) {
         shoot_idx = (shoot_idx + 1) % 4;
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
-    if (ship_state == EXP && shipexp)
-    {
+    if (ship_state == EXP && shipexp) {
         printf("Explosion frame: %d\n", exp_idx);
         exp_idx++;
-        if (exp_idx < 7)
-        {
+        if (exp_idx < 7) {
             iChangeSpriteFrames(&spaceship, s_exp, 7);
             spaceship.currentFrame = exp_idx;
-        }
-        else
-        {
+        } else {
             printf("Explosion complete, transitioning to game over\n");
             shipexp = false;
             ship_state = IDLE;
             prev_gamestate = gamestate;
-            if (gamestate == ARCADE) arcade_score = scorenumber;
-            else if (gamestate == BOSS) boss_score = scorenumber;
-            else if (gamestate == ENDLESS) endless_score = scorenumber;
-            gamestate = GAMEOVER;
+            if (gamestate == ARCADE) {
+                arcade_score = scorenumber;
+                addScoreToLeaderboard(arcadeLeaderboard, &arcadeCount, player_name, arcade_score);
+                saveLeaderboard(ARCADE_SCORE_FILE, arcadeLeaderboard, arcadeCount);
+                gamestate = GAMEOVER;
+            } else if (gamestate == BOSS) {
+                boss_score = scorenumber;
+                addScoreToLeaderboard(bossLeaderboard, &bossCount, player_name, boss_score);
+                saveLeaderboard(BOSS_SCORE_FILE, bossLeaderboard, bossCount);
+                gamestate = GAMEOVER;
+            } else if (gamestate == ENDLESS) {
+                endless_score = scorenumber;
+                addScoreToLeaderboard(endlessLeaderboard, &endlessCount, player_name, endless_score);
+                saveLeaderboard(ENDLESS_SCORE_FILE, endlessLeaderboard, endlessCount);
+                gamestate = GAMEOVER;
+            }
             iChangeSpriteFrames(&spaceship, idle, 1);
             exp_idx = 0;
         }
     }
 }
-
 void moveSpaceship()
 {
     if (game_paused || ship_state == EXP)
@@ -2861,9 +2934,14 @@ void sound_manage()
 void mainpage1()
 {
     // Background and Base UI
-    iShowLoadedImage(0, 0, &mainbg);
+    if (gamestate == BOSS)
+    {iShowLoadedImage(0, 0, &mainbg);
     wrap = game_paused ? 0 : -2;
-    iWrapImage(&mainbg, wrap);
+    iWrapImage(&mainbg, wrap);}
+    else if (gamestate == ARCADE)
+    {iShowLoadedImage(0, 0, &abg);
+    wrap = game_paused ? 0 : -2;
+    iWrapImage(&abg, wrap);}
     if (gamestate == BOSS)
         enem6_active = true;
 
@@ -3160,11 +3238,9 @@ void mainpage2()
 // iGRAPHICS CALLBACK FUNCTIONS
 //=============================================================================
 
-void iDraw()
-{
+void iDraw() {
     iClear();
-    switch (gamestate)
-    {
+    switch (gamestate) {
     case HOME:
         ship_state = IDLE;
         homepage();
@@ -3194,8 +3270,7 @@ void iDraw()
         break;
     case ARCADE:
         mainpage1();
-        if (game_paused)
-        {
+        if (game_paused) {
             iShowLoadedImage(420, 400, &paused);
             iSetColor(255, 255, 255);
             iShowText(520, 370, "RESUME", "assets/fonts/mokoto.ttf");
@@ -3205,8 +3280,7 @@ void iDraw()
         break;
     case ENDLESS:
         mainpage2();
-        if (game_paused)
-        {
+        if (game_paused) {
             iShowLoadedImage(420, 400, &paused);
             iSetColor(255, 255, 255);
             iShowText(520, 370, "RESUME", "assets/fonts/mokoto.ttf");
@@ -3216,8 +3290,7 @@ void iDraw()
         break;
     case BOSS:
         mainpage1();
-        if (game_paused)
-        {
+        if (game_paused) {
             iShowLoadedImage(420, 400, &paused);
             iSetColor(255, 255, 255);
             iShowText(520, 370, "RESUME", "assets/fonts/mokoto.ttf");
@@ -3227,59 +3300,65 @@ void iDraw()
         break;
     case GAMEOVER:
         if (sound_check == 0 && mainidx != -1)
-            iPauseSound(mainidx); // Pause mainidx
-
+            iPauseSound(mainidx);
         iShowLoadedImage(0, 0, &gameoverscreen);
         if (gocount == 0)
-        {
             iShowLoadedImage(400, 300, &go1);
-        }
         else if (gocount == 1)
-        {
             iShowLoadedImage(400, 300, &go2);
-        }
         else if (gocount == 2)
-        {
             iShowLoadedImage(400, 300, &go3);
-        }
         else if (gocount == 3)
-        {
             iShowLoadedImage(400, 300, &go4);
-        }
         else if (gocount == 4)
-        {
             iShowLoadedImage(400, 300, &go5);
-        }
         else if (gocount == 5)
-        {
             iShowLoadedImage(400, 300, &go6);
-        }
         else if (gocount == 6)
-        {
             iShowLoadedImage(400, 300, &go7);
-        }
         else if (gocount == 7)
-        {
             iShowLoadedImage(400, 300, &go8);
-        }
         if (scorecolour == 0)
-        {
             iShowLoadedImage(400, 50, &score1);
-        }
         else if (scorecolour == 1)
-        {
             iShowLoadedImage(400, 50, &score2);
-        }
         else if (scorecolour == 2)
-        {
             iShowLoadedImage(400, 50, &score3);
-        }
         sprintf(scoretext, "%d", scorenumber);
         iShowText(640, 140, scoretext, "assets/fonts/Orbitron-Medium.ttf");
         break;
+    case ARCADE_SCORE:
+        iShowLoadedImage(0, 0, &ascore);
+        iSetColor(255, 255, 255);
+        for (int i = 0; i < arcadeCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
+            char scoreStr[20];
+            sprintf(scoreStr, "%d", arcadeLeaderboard[i].score);
+            iShowText(235, 525 - i * 80, arcadeLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
+        }
+        break;
+    case BOSS_SCORE:
+        iShowLoadedImage(0, 0, &bscore);
+        iSetColor(255, 255, 255);
+        for (int i = 0; i < bossCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
+            char scoreStr[20];
+            sprintf(scoreStr, "%d", bossLeaderboard[i].score);
+            iShowText(235, 525 - i * 80, bossLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
+        }
+        break;
+    case ENDLESS_SCORE:
+        iShowLoadedImage(0, 0, &lscore);
+        iSetColor(255, 255, 255);
+        for (int i = 0; i < endlessCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
+            char scoreStr[20];
+            sprintf(scoreStr, "%d", endlessLeaderboard[i].score);
+            iShowText(235, 525 - i * 80, endlessLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
+        }
+        break;
     }
 }
-
 void iMouseMove(int mx, int my)
 {
 }
@@ -3477,6 +3556,10 @@ void iMouse(int button, int state, int mx, int my)
                     iResumeSound(homeidx);
                 }
             }
+
+            break;
+        case ARCADE_SCORE:
+                        cout << mx << " " << my << endl;
             break;
         }
     }
@@ -3773,6 +3856,7 @@ int main(int argc, char *argv[])
     loadresources();
     sound_manage();
     iInitializeFont();
+    initLeaderboards();
     timer_id = iSetTimer(50, timer);
     animation_timer_id = iSetTimer(100, updateAnimation);
     iSetTimer(20, bossexplosion);
