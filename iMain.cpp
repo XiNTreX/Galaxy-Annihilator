@@ -78,10 +78,12 @@ game prev_gamestate;
 
 // Score and UI Variables
 Image blu3,blu2,blu1,blugo,bla3,bla2,bla1,blago,pur3,pur2,pur1,purgo;
+Image profile;
 int blu=3, bla=3, pur=3,countertimer=0;
 int scorenumber = 0;
 char scoretext[100];
 int scorecolour = 0;
+char arcbosshp[30];char bossbosshp[30];
 int scorecolourtimer = 0;
 int survival_score_timer = 0;
 int gocount = 0;
@@ -224,6 +226,7 @@ Image go1, go2, go3, go4, go5, go6, go7, go8;
 Image num1, num2, num3, num4, num5, num6, num7, num8, num9, num0;
 Image home, mode, help, controls, quit, sound, name;
 Image ascore, bscore, lscore;
+Image about;
 // Spaceship Images and Sprites
 Image idle[1], bullet_img[1];
 Image s_boost[6], s_exp[7], s_shoot[4];
@@ -378,7 +381,7 @@ void resetGame()
     // Reset Score
     scorenumber = 0;
     sprintf(scoretext, "%d", scorenumber);
-
+   
     // Reset Enemy 1
     enem1_active = false;
     enem1_x = 1200;
@@ -448,7 +451,9 @@ void resetGame()
     enem6_exp_idx = 0;
     enem6_fire_timer = 0;
     enem6hp = 300;
+    sprintf(arcbosshp, "%d", enem6hp);
     bosshp = 600;
+    sprintf(bossbosshp, "%d", bosshp);
     if (gamestate == ARCADE)
     {
         enem6_spawned = false;
@@ -542,6 +547,9 @@ void resetGame()
 
 void loadresources()
 {    //load countdown
+    iLoadImage(&about,"assets/images/about.png");
+    iLoadImage(&profile,"assets/images/bossprofile.png");
+    iScaleImage(&profile, 0.15);
     iLoadImage(&blu3,"assets/images/gs_blu/3.png");
     iLoadImage(&blu2,"assets/images/gs_blu/2.png");
     iLoadImage(&blu1,"assets/images/gs_blu/1.png");
@@ -833,13 +841,13 @@ void updateAnimation() {
         iChangeSpriteFrames(&spaceship, s_shoot, 4);
     }
     if (ship_state == EXP && shipexp) {
-        printf("Explosion frame: %d\n", exp_idx);
+       // printf("Explosion frame: %d\n", exp_idx);
         exp_idx++;
         if (exp_idx < 7) {
             iChangeSpriteFrames(&spaceship, s_exp, 7);
             spaceship.currentFrame = exp_idx;
         } else {
-            printf("Explosion complete, transitioning to game over\n");
+           // printf("Explosion complete, transitioning to game over\n");
             shipexp = false;
             ship_state = IDLE;
             
@@ -1643,7 +1651,7 @@ void updateEnemyExplosion()
         // Enemy 1 Explosion Animation
         if (enem1_exploding)
         {
-            printf("Enemy1 explosion frame: %d\n", enem1_exp_idx);
+          //  printf("Enemy1 explosion frame: %d\n", enem1_exp_idx);
             enem1_exp_idx++;
             if (enem1_exp_idx < 10)
             {
@@ -1653,7 +1661,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy1 explosion complete, deactivating\n");
+               // printf("Enemy1 explosion complete, deactivating\n");
                 enem1_exploding = false;
                 enem1_active = false;
                 enem1_exp_idx = 0;
@@ -1671,7 +1679,7 @@ void updateEnemyExplosion()
         // Enemy 2 Explosion Animation
         if (enem2_exploding)
         {
-            printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
+            //printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
             enem2_exp_idx++;
             if (enem2_exp_idx < 12)
             {
@@ -1681,7 +1689,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy2 explosion complete, deactivating\n");
+               // printf("Enemy2 explosion complete, deactivating\n");
                 enem2_exploding = false;
                 enem2_active = false;
                 enem2_exp_idx = 0;
@@ -1703,7 +1711,7 @@ void updateEnemyExplosion()
         // Enemy 5 Explosion Animation
         if (enem5_exploding)
         {
-            printf("Enemy2 explosion frame: %d\n", enem5_exp_idx);
+           // printf("Enemy2 explosion frame: %d\n", enem5_exp_idx);
             enem5_exp_idx++;
             if (enem5_exp_idx < 11)
             {
@@ -1713,7 +1721,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy2 explosion complete, deactivating\n");
+                //printf("Enemy2 explosion complete, deactivating\n");
                 enem5_exploding = false;
                 enem5_active = false;
                 enem5_exp_idx = 0;
@@ -1732,7 +1740,7 @@ void updateEnemyExplosion()
         // enemy 4
         if (enem4_exploding)
         {
-            printf("Enemy1 explosion frame: %d\n", enem4_exp_idx);
+           // printf("Enemy1 explosion frame: %d\n", enem4_exp_idx);
             enem4_exp_idx++;
             if (enem4_exp_idx < 11)
             {
@@ -1742,7 +1750,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy1 explosion complete, deactivating\n");
+               // printf("Enemy1 explosion complete, deactivating\n");
                 enem4_exploding = false;
                 enem4_active = false;
                 enem4_exp_idx = 0;
@@ -1759,7 +1767,7 @@ void updateEnemyExplosion()
         }
         if (enem1_exploding)
         {
-            printf("Enemy1 explosion frame: %d\n", enem1_exp_idx);
+          //  printf("Enemy1 explosion frame: %d\n", enem1_exp_idx);
             enem1_exp_idx++;
             if (enem1_exp_idx < 10)
             {
@@ -1769,7 +1777,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy1 explosion complete, deactivating\n");
+               // printf("Enemy1 explosion complete, deactivating\n");
                 enem1_exploding = false;
                 enem1_active = false;
                 enem1_exp_idx = 0;
@@ -1782,7 +1790,7 @@ void updateEnemyExplosion()
         }
         if (enem2_exploding)
         {
-            printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
+           // printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
             enem2_exp_idx++;
             if (enem2_exp_idx < 12)
             {
@@ -1792,7 +1800,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy2 explosion complete, deactivating\n");
+               // printf("Enemy2 explosion complete, deactivating\n");
                 enem2_exploding = false;
                 enem2_active = false;
                 enem2_exp_idx = 0;
@@ -1805,7 +1813,7 @@ void updateEnemyExplosion()
         }
         if (enem3_exploding)
         {
-            printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
+          //  printf("Enemy2 explosion frame: %d\n", enem2_exp_idx);
             enem3_exp_idx++;
             if (enem3_exp_idx < 11)
             {
@@ -1815,7 +1823,7 @@ void updateEnemyExplosion()
             }
             else
             {
-                printf("Enemy2 explosion complete, deactivating\n");
+               // printf("Enemy2 explosion complete, deactivating\n");
                 enem3_exploding = false;
                 enem3_active = false;
                 enem3_exp_idx = 0;
@@ -1834,17 +1842,17 @@ void bossexplosion()
         return;
     if (enem6_exploding)
     {
-        printf("Enemy6 explosion frame: %d\n", enem6_exp_idx);
+       // printf("Enemy6 explosion frame: %d\n", enem6_exp_idx);
         enem6_exp_idx++;
         if (enem6_exp_idx < 11)
         {
             iChangeSpriteFrames(&enem6, e6exp, 11);
             enem6.currentFrame = enem6_exp_idx;
-            iSetSpritePosition(&enem6, enem6_x - 50 , enem6_y - 50);
+            iSetSpritePosition(&enem6, enem6_x - 210 , enem6_y - 210);
         }
         else
         {
-            printf("Enemy6 explosion complete, transitioning to game over\n");
+           // printf("Enemy6 explosion complete, transitioning to game over\n");
             enem6_exploding = false;
             enem6_active = false;
             enem6_exp_idx = 0;
@@ -2109,7 +2117,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Enemy 1
     if (iCheckCollision(&spaceship, &enem1) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy1 at spaceship (%d, %d), enemy1 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
+       // printf("Collision with enemy1 at spaceship (%d, %d), enemy1 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
         enem1_active = false;
         enem1_exploding = true;
         iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
@@ -2126,7 +2134,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Enemy 2
     if (iCheckCollision(&spaceship, &enem2) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy2 at spaceship (%d, %d), enemy2 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
+       // printf("Collision with enemy2 at spaceship (%d, %d), enemy2 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
         enem2_active = false;
         enem2_exploding = true;
         iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
@@ -2143,7 +2151,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Enemy 6
     if (iCheckCollision(&spaceship, &enem6) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy6 at spaceship (%d, %d), enemy6 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
+       // printf("Collision with enemy6 at spaceship (%d, %d), enemy6 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
         enem6_active = false;
         enem6_exploding = true;
         iPlaySound("assets/sounds/explosionboss.wav", false, 100);
@@ -2159,7 +2167,7 @@ void checkEnemSpaceCollision()
     }
     if (iCheckCollision(&spaceship, &enem3) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy3 at spaceship (%d, %d), enemy3 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
+       // printf("Collision with enemy3 at spaceship (%d, %d), enemy3 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
         enem3_active = false;
         enem3_exploding = true;
         iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
@@ -2176,7 +2184,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Enemy 4
     if (iCheckCollision(&spaceship, &enem4) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy4 at spaceship (%d, %d), enemy4 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
+       // printf("Collision with enemy4 at spaceship (%d, %d), enemy4 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
         enem4_active = false;
         enem4_exploding = true;
         iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
@@ -2193,7 +2201,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Enemy 5
     if (iCheckCollision(&spaceship, &enem5) && !shield_active && !shipexp)
     {
-        printf("Collision with enemy5 at spaceship (%d, %d), enemy5 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
+       // printf("Collision with enemy5 at spaceship (%d, %d), enemy5 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
         enem5_active = false;
         enem5_exploding = true;
         iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
@@ -2210,7 +2218,7 @@ void checkEnemSpaceCollision()
     // Spaceship vs Meteor
     if (meteor && iCheckCollision(&spaceship, &met) && !shield_active && !shipexp)
     {
-        printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
+       // printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
         iPlaySound("rock.wav", false, 100);
         meteor = false;
         meteor_spawn_timer = 0;
@@ -2226,7 +2234,7 @@ void checkEnemSpaceCollision()
     }
     if (meteor2 && iCheckCollision(&spaceship, &met2) && !shield_active && !shipexp)
     {
-        printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
+       // printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
         iPlaySound("rock.wav", false, 100);
         meteor2 = false;
         meteor2_spawn_timer = 0;
@@ -2343,10 +2351,14 @@ void checkBulletEnemyCollision()
                     if (iCheckCollision(&bullet_sprites[i], &enem6))
                     {
                         bullet_active[i] = 0;
-                        if (gamestate == ARCADE)
+                        if (gamestate == ARCADE){
                             enem6hp--;
-                        else if (gamestate == BOSS)
+                            sprintf(arcbosshp, "%d", enem6hp);
+                            
+                     } else if (gamestate == BOSS){
                             bosshp--;
+                            sprintf(bossbosshp, "%d", bosshp);
+                    }
                         if (gamestate == BOSS)
                         {
                             scorenumber += 5;
@@ -2377,7 +2389,7 @@ void checkBulletEnemyCollision()
                 {
                     if (iCheckCollision(&bullet_sprites[i], &met))
                     {
-                        printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], metx, mety);
+                       // printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], metx, mety);
                         bullet_active[i] = 0;
                         bullet_x[i] = -100;
                         bullet_y[i] = -100;
@@ -2395,6 +2407,34 @@ void checkBulletEnemyCollision()
                 }
             }
         }
+        if (meteor2 && gamestate == BOSS)
+        {
+            for (int i = 0; i < MAX_BULLETS; i++)
+            {
+                if (bullet_active[i])
+                {
+                    if (iCheckCollision(&bullet_sprites[i], &met2))
+                    {
+                      //  printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], met2x, met2y);
+                        bullet_active[i] = 0;
+                        bullet_x[i] = -100;
+                        bullet_y[i] = -100;
+                        iSetSpritePosition(&bullet_sprites[i], -100, -100);
+                        //meteor2 = false;
+                        iPlaySound("rock.wav", false, 100);
+                        meteor2=false;
+                        meteor2_spawn_timer = 0;
+                        met2x = 550;
+                        met2y = -300;
+                        iSetSpritePosition(&met2, met2x, met2y);
+                        scorenumber += 50;
+                        sprintf(scoretext, "%d", scorenumber);
+                    }
+                }
+            }
+        }
+        
+        
     }
     else if (gamestate == ENDLESS)
     {
@@ -2556,7 +2596,7 @@ void checkBulletEnemyCollision()
                 {
                     if (iCheckCollision(&bullet_sprites[i], &met2))
                     {
-                        printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], metx, mety);
+                      //  printf("Bullet hit meteor at bullet (%d, %d), meteor (%d, %d)\n", bullet_x[i], bullet_y[i], metx, mety);
                         bullet_active[i] = 0;
                         bullet_x[i] = -100;
                         bullet_y[i] = -100;
@@ -2600,7 +2640,7 @@ void enemBulletCollision()
     {
         if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp)
         {
-            printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]);
+          //  printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]);
             ebullet_active[i] = 0;
             ebullet_x[i] = -100;
             ebullet_y[i] = -100;
@@ -2630,7 +2670,7 @@ void enemBulletCollision()
     {
         if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i]) && !shipexp)
         {
-            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+           // printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e2bullet_active[i] = 0;
             e2bullet_x[i] = -100;
             e2bullet_y[i] = -100;
@@ -2658,7 +2698,7 @@ void enemBulletCollision()
     {
         if (e6bullet_active[i] && iCheckCollision(&spaceship, &e6bulsprite[i]) && !shipexp)
         {
-            printf("Enemy6 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e6bullet_x[i], e6bullet_y[i]);
+          //  printf("Enemy6 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e6bullet_x[i], e6bullet_y[i]);
             e6bullet_active[i] = 0;
             e6bullet_x[i] = -100;
             e6bullet_y[i] = -100;
@@ -2688,7 +2728,7 @@ void enemBulletCollision()
     {
         if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp)
         {
-            printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]);
+           // printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]);
             ebullet_active[i] = 0;
             ebullet_x[i] = -100;
             ebullet_y[i] = -100;
@@ -2718,7 +2758,7 @@ void enemBulletCollision()
     {
         if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i]) && !shipexp)
         {
-            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+          //  printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e2bullet_active[i] = 0;
             e2bullet_x[i] = -100;
             e2bullet_y[i] = -100;
@@ -2747,7 +2787,7 @@ void enemBulletCollision()
     {
         if (e3bullet_active[i] && iCheckCollision(&spaceship, &e3bulsprite[i]) && !shipexp)
         {
-            printf("Enemy3 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+          //  printf("Enemy3 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e3bullet_active[i] = 0;
             e3bullet_x[i] = -100;
             e3bullet_y[i] = -100;
@@ -2776,7 +2816,7 @@ void enemBulletCollision()
     {
         if (e4bullet_active[i] && iCheckCollision(&spaceship, &e4bulsprite[i]) && !shipexp)
         {
-            printf("Enemy4 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+           // printf("Enemy4 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e4bullet_active[i] = 0;
             e4bullet_x[i] = -100;
             e4bullet_y[i] = -100;
@@ -2805,7 +2845,7 @@ void enemBulletCollision()
     {
         if (e5bullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp)
         {
-            printf("Enemy5 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+           // printf("Enemy5 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e5bullet_active[i] = 0;
             e5bullet_x[i] = -100;
             e5bullet_y[i] = -100;
@@ -2834,7 +2874,7 @@ void enemBulletCollision()
     {
         if (e6bullet_active[i] && iCheckCollision(&spaceship, &e6bulsprite[i]) && !shipexp)
         {
-            printf("Enemy6 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e6bullet_x[i], e6bullet_y[i]);
+           // printf("Enemy6 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e6bullet_x[i], e6bullet_y[i]);
             e6bullet_active[i] = 0;
             e6bullet_x[i] = -100;
             e6bullet_y[i] = -100;
@@ -2866,7 +2906,7 @@ void enemBulletCollision()
         invincibility_end_time = current_time + 500;
         if (health <= 0)
         {
-            printf("Health <= 0, triggering explosion\n");
+          //  printf("Health <= 0, triggering explosion\n");
             shipexp = true;
             iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
             ship_state = EXP;
@@ -3169,11 +3209,20 @@ void mainpage1()
             iShowSprite(&enem1);
         if (enem2_active || enem2_exploding)
             iShowSprite(&enem2);
+        
     }
     if (gamestate == ARCADE || gamestate == BOSS)
     {
-        if (enem6_active || enem6_exploding)
+        if (enem6_active || enem6_exploding){
             iShowSprite(&enem6);
+        if(gamestate==BOSS){
+            iShowLoadedImage(-10,-10,&profile);
+            iShowText(150,50,bossbosshp,"assets/fonts/mokoto.ttf");
+        }else if(gamestate==ARCADE){
+            iShowLoadedImage(-10,-10,&profile);
+            iShowText(150,50,arcbosshp,"assets/fonts/mokoto.ttf");
+        }
+    }
     }
 
     // Bullet Display
@@ -3254,9 +3303,11 @@ void mainpage1()
     // Rocket Power-up Timer Display
     if (rocket_powerup_active)
     {
-        int current_time = glutGet(GLUT_ELAPSED_TIME);
+        
+            int current_time = glutGet(GLUT_ELAPSED_TIME);
         int elapsed = current_time - rocket_powerup_start_time;
-        int display_number = 9 - (elapsed / 1000);
+       int display_number = 9 - (elapsed / 1000);
+        
         if (display_number >= 0 && display_number <= 9)
         {   if(rocket_countidx!=-1){
             iStopSound(rocket_countidx);
@@ -3489,6 +3540,9 @@ void iDraw() {
     case HELP:
         iShowLoadedImage(0, 0, &help);
         break;
+    case ABOUT:
+        iShowLoadedImage(0,0,&about);
+        break;
     case CONTROLS:
         iShowLoadedImage(0, 0, &controls);
         break;
@@ -3571,7 +3625,7 @@ void iDraw() {
         for (int i = 0; i < arcadeCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
             char scoreStr[20];
             sprintf(scoreStr, "%d", arcadeLeaderboard[i].score);
-            iShowText(235, 525 - i * 80, arcadeLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(250, 525 - i * 80, arcadeLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
             iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
         }
         break;
@@ -3591,7 +3645,7 @@ void iDraw() {
         for (int i = 0; i < endlessCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
             char scoreStr[20];
             sprintf(scoreStr, "%d", endlessLeaderboard[i].score);
-            iShowText(235, 525 - i * 80, endlessLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(250, 525 - i * 80, endlessLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
             iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
         }
         break;

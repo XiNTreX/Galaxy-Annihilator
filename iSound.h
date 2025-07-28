@@ -133,11 +133,3 @@ void iFreeSound()
     Mix_CloseAudio();
     SDL_Quit();
 }
-/*void iStopAllEffectSounds()
-{
-    for (int i = 0; i < 16; i++) // Include all channels
-    {
-        Mix_HaltChannel(i);
-        channelFinishedCallback(i);
-    }
-}*/
