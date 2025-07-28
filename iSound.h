@@ -80,7 +80,7 @@ void iStopSound(int channel)
 void iStopAllSounds()
 {
     Mix_HaltChannel(-1); // -1 means halt ALL channels
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 16; ++i)
     {
         channelFinishedCallback(i);
     }
@@ -119,12 +119,13 @@ void iInitializeSound()
         printf("SDL_mixer could not initialize! Mix_Error: %s\n", Mix_GetError());
         return;
     }
+    Mix_AllocateChannels(16);
     Mix_ChannelFinished(channelFinishedCallback);
 }
 
 void iFreeSound()
 {
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 16; ++i)
     {
         Mix_FreeChunk(channelChunks[i]);
         channelChunks[i] = nullptr;
@@ -132,3 +133,11 @@ void iFreeSound()
     Mix_CloseAudio();
     SDL_Quit();
 }
+/*void iStopAllEffectSounds()
+{
+    for (int i = 0; i < 16; i++) // Include all channels
+    {
+        Mix_HaltChannel(i);
+        channelFinishedCallback(i);
+    }
+}*/

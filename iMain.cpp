@@ -77,6 +77,8 @@ int just_reset_timer = 0;
 game prev_gamestate;
 
 // Score and UI Variables
+Image blu3,blu2,blu1,blugo,bla3,bla2,bla1,blago,pur3,pur2,pur1,purgo;
+int blu=3, bla=3, pur=3,countertimer=0;
 int scorenumber = 0;
 char scoretext[100];
 int scorecolour = 0;
@@ -202,6 +204,7 @@ int homeidx = -1, mainidx = -1;
 int homesound, mainsound;
 int sound_check = 0;
 int fullscreen = 0;
+int rocket_countidx=-1;
 
 // Miscellaneous
 char des[7][100];
@@ -350,7 +353,8 @@ void initLeaderboards() {
     loadLeaderboard(ENDLESS_SCORE_FILE, endlessLeaderboard, &endlessCount);
 }
 void resetGame()
-{
+{   bla=blu=pur=3;
+    countertimer=0;
     wave_timer = 0;
     enemy_wave = 0;
     // Reset Player Stats
@@ -530,7 +534,31 @@ void resetGame()
 //=============================================================================
 
 void loadresources()
-{
+{    //load countdown
+    iLoadImage(&blu3,"assets/images/gs_blu/3.png");
+    iLoadImage(&blu2,"assets/images/gs_blu/2.png");
+    iLoadImage(&blu1,"assets/images/gs_blu/1.png");
+    iLoadImage(&blugo,"assets/images/gs_blu/go.png");
+    iScaleImage(&blu3, 0.1);
+    iScaleImage(&blu2, 0.1);
+    iScaleImage(&blu1, 0.1);
+    iScaleImage(&blugo, 0.1);
+    iLoadImage(&bla3,"assets/images/gs_bla/3.png");
+    iLoadImage(&bla2,"assets/images/gs_bla/2.png");
+    iLoadImage(&bla1,"assets/images/gs_bla/1.png");
+    iLoadImage(&blago,"assets/images/gs_bla/go.png");
+    iScaleImage(&bla3, 0.1);
+    iScaleImage(&bla2, 0.1);
+    iScaleImage(&bla1, 0.1);
+    iScaleImage(&blago, 0.1);
+    iLoadImage(&pur3,"assets/images/gs_purp/3.png");
+    iLoadImage(&pur2,"assets/images/gs_purp/2.png");
+    iLoadImage(&pur1,"assets/images/gs_purp/1.png");
+    iLoadImage(&purgo,"assets/images/gs_purp/go.png");
+    iScaleImage(&pur3, 0.1);
+    iScaleImage(&pur2, 0.1);
+    iScaleImage(&pur1, 0.1);
+    iScaleImage(&purgo, 0.1);
     // Load Game Over Screen Images
     iLoadImage(&score1, "assets/images/gameover/score1.png");
     iLoadImage(&score2, "assets/images/gameover/score2.png");
@@ -1251,6 +1279,11 @@ void updateBonuses()
     {
         rocket_powerup_active = false;
         rocket_powerup_count = 0; // Reset power-up count
+        if (rocket_countidx != -1)
+            {
+                iStopSound(rocket_countidx); // Stop sound when countdown ends
+                rocket_countidx = -1;
+            }
     }
     //}
 }
@@ -2011,6 +2044,7 @@ void bossexplosion()
             enem6_y = SCREEN_HEIGHT + 50;
             iSetSpritePosition(&enem6, enem6_x, enem6_y);
             prev_gamestate = gamestate;
+            
 
             gamestate = GAMEOVER; // Transition to game over
         }
@@ -2037,7 +2071,7 @@ void checkshieldcollision()
                     ebullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2055,7 +2089,7 @@ void checkshieldcollision()
                     e2bullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2072,7 +2106,7 @@ void checkshieldcollision()
                     e3bullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2089,7 +2123,7 @@ void checkshieldcollision()
                     e4bullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2106,7 +2140,7 @@ void checkshieldcollision()
                     e5bullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2123,7 +2157,7 @@ void checkshieldcollision()
                     e6bullet_active[i] = 0;
                     shield_hp--;
                     if (shield_hp <= 0)
-                    {
+                    {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                         shield_active = false;
                         shield_hp = 3;
                         iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2136,11 +2170,12 @@ void checkshieldcollision()
         if (iCheckCollision(&shieldsprt, &met))
         {
             meteor = false;
+            iPlaySound("assets/sounds/rock.wav", false, 100);
             iSetSpritePosition(&met, -100, -100);
             meteor_spawn_timer = 0;
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2149,11 +2184,12 @@ void checkshieldcollision()
         if (iCheckCollision(&shieldsprt, &met2))
         {
             meteor2 = false;
+            iPlaySound("assets/sounds/rock.wav", false, 100);
             iSetSpritePosition(&met2, -100, -100);
             meteor2_spawn_timer = 0;
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2168,7 +2204,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem1, e1exp, 10);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2183,7 +2219,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem2, e2exp, 12);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2197,7 +2233,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem3, e3exp, 11);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2212,7 +2248,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem4, e4exp, 11);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2226,7 +2262,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem5, e5exp, 11);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2240,7 +2276,7 @@ void checkshieldcollision()
             iChangeSpriteFrames(&enem6, e6exp, 11);
             shield_hp -= 3;
             if (shield_hp <= 0)
-            {
+            {iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                 shield_active = false;
                 shield_hp = 3;
                 iSetSpritePosition(&shieldsprt, -100, -100);
@@ -2264,9 +2300,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy1 at spaceship (%d, %d), enemy1 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
         enem1_active = false;
         enem1_exploding = true;
+        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
         enem1_exp_idx = 0;
         iChangeSpriteFrames(&enem1, e1exp, 10);
         shipexp = true;
+        iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2279,9 +2317,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy2 at spaceship (%d, %d), enemy2 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
         enem2_active = false;
         enem2_exploding = true;
+        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
         enem2_exp_idx = 0;
         iChangeSpriteFrames(&enem2, e2exp, 12);
         shipexp = true;
+        iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2294,9 +2334,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy6 at spaceship (%d, %d), enemy6 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
         enem6_active = false;
         enem6_exploding = true;
+        iPlaySound("assets/sounds/explosionboss.wav", false, 100);
         enem6_exp_idx = 0;
         iChangeSpriteFrames(&enem6, e6exp, 11);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2307,9 +2349,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy3 at spaceship (%d, %d), enemy3 (%d, %d)\n", move_lf, move_ud, enem1_x, enem1_y);
         enem3_active = false;
         enem3_exploding = true;
+        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
         enem3_exp_idx = 0;
         iChangeSpriteFrames(&enem3, e3exp, 11);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2322,9 +2366,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy4 at spaceship (%d, %d), enemy4 (%d, %d)\n", move_lf, move_ud, enem2_x, enem2_y);
         enem4_active = false;
         enem4_exploding = true;
+        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
         enem4_exp_idx = 0;
         iChangeSpriteFrames(&enem4, e4exp, 11);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2337,9 +2383,11 @@ void checkEnemSpaceCollision()
         printf("Collision with enemy5 at spaceship (%d, %d), enemy5 (%d, %d)\n", move_lf, move_ud, enem6_x, enem6_y);
         enem5_active = false;
         enem5_exploding = true;
+        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
         enem5_exp_idx = 0;
         iChangeSpriteFrames(&enem5, e5exp, 11);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2350,12 +2398,14 @@ void checkEnemSpaceCollision()
     if (meteor && iCheckCollision(&spaceship, &met) && !shield_active && !shipexp)
     {
         printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
+        iPlaySound("rock.wav", false, 100);
         meteor = false;
         meteor_spawn_timer = 0;
         metx = 550;
         mety = 1000;
         iSetSpritePosition(&met, metx, mety);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2364,12 +2414,14 @@ void checkEnemSpaceCollision()
     if (meteor2 && iCheckCollision(&spaceship, &met2) && !shield_active && !shipexp)
     {
         printf("Collision with meteor at spaceship (%d, %d), meteor (%d, %d)\n", move_lf, move_ud, metx, mety);
+        iPlaySound("rock.wav", false, 100);
         meteor2 = false;
         meteor2_spawn_timer = 0;
         met2x = 550;
         met2y = -300;
         iSetSpritePosition(&met2, met2x, met2y);
         shipexp = true;
+         iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
         ship_state = EXP;
         exp_idx = 0;
         iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2377,7 +2429,7 @@ void checkEnemSpaceCollision()
     }
     // Spaceship vs Power-ups
     if (bonushp && iCheckCollision(&spaceship, &bo_hp))
-    {
+    {   iPlaySound("assets/sounds/powerup.mp3", false, 100);
         if (health < 3)
         {
             health++;
@@ -2387,7 +2439,7 @@ void checkEnemSpaceCollision()
     }
 
     if (bonusrocket && iCheckCollision(&spaceship, &bo_roc))
-    {
+    {   iPlaySound("assets/sounds/powerup.mp3", false, 100);
         rocket_powerup_active = true;
         rocket_powerup_count++; // Increment power-up count
         rocket_powerup_start_time = glutGet(GLUT_ELAPSED_TIME);
@@ -2397,7 +2449,7 @@ void checkEnemSpaceCollision()
     }
 
     if (bonusshield && iCheckCollision(&spaceship, &bo_shi))
-    {
+    {   iPlaySound("assets/sounds/powerup.mp3", false, 100);
         shield_active = true;
         shieldx = move_lf - 5;
         shieldy = move_ud - 5;
@@ -2429,6 +2481,7 @@ void checkBulletEnemyCollision()
                         bullet_active[i] = 0;
                         enem1_active = false;
                         enem1_exploding = true;
+                        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                         scorenumber += 100;
                         sprintf(scoretext, "%d", scorenumber);
                         enem1_exp_idx = 0;
@@ -2454,6 +2507,7 @@ void checkBulletEnemyCollision()
                         {
                             enem2_active = false;
                             enem2_exploding = true;
+                            iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                             scorenumber += 100;
                             sprintf(scoretext, "%d", scorenumber);
                             enem2_exp_idx = 0;
@@ -2489,6 +2543,7 @@ void checkBulletEnemyCollision()
                         {
                             enem6_active = false;
                             enem6_exploding = true;
+                            iPlaySound("assets/sounds/explosionboss.wav", false, 100);
                             scorenumber += 1000;
                             sprintf(scoretext, "%d", scorenumber);
                             enem6_exp_idx = 0;
@@ -2514,7 +2569,9 @@ void checkBulletEnemyCollision()
                         bullet_x[i] = -100;
                         bullet_y[i] = -100;
                         iSetSpritePosition(&bullet_sprites[i], -100, -100);
-                        meteor = false;
+                        //meteor = false;
+                        iPlaySound("rock.wav", false, 100);
+                        meteor=false;
                         meteor_spawn_timer = 0;
                         metx = 550;
                         mety = 1000;
@@ -2540,6 +2597,7 @@ void checkBulletEnemyCollision()
                         bullet_active[i] = 0;
                         enem1_active = false;
                         enem1_exploding = true;
+                        iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                         scorenumber += 100;
                         sprintf(scoretext, "%d", scorenumber);
                         enem1_exp_idx = 0;
@@ -2565,6 +2623,7 @@ void checkBulletEnemyCollision()
                         {
                             enem2_active = false;
                             enem2_exploding = true;
+                            iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                             scorenumber += 100;
                             sprintf(scoretext, "%d", scorenumber);
                             enem2_exp_idx = 0;
@@ -2589,6 +2648,7 @@ void checkBulletEnemyCollision()
                         {
                             enem3_active = false;
                             enem3_exploding = true;
+                            iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                             scorenumber += 100;
                             sprintf(scoretext, "%d", scorenumber);
                             enem3_exp_idx = 0;
@@ -2613,6 +2673,7 @@ void checkBulletEnemyCollision()
                         {
                             enem4_active = false;
                             enem4_exploding = true;
+                            iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                             scorenumber += 200;
                             sprintf(scoretext, "%d", scorenumber);
                             enem4_exp_idx = 0;
@@ -2637,6 +2698,7 @@ void checkBulletEnemyCollision()
                         {
                             enem5_active = false;
                             enem5_exploding = true;
+                            iPlaySound("assets/sounds/enemyexplosion.wav", false, 100);
                             scorenumber += 200;
                             sprintf(scoretext, "%d", scorenumber);
                             enem5_exp_idx = 0;
@@ -2660,6 +2722,8 @@ void checkBulletEnemyCollision()
                         bullet_x[i] = -100;
                         bullet_y[i] = -100;
                         iSetSpritePosition(&bullet_sprites[i], -100, -100);
+                        //meteor = false;
+                        iPlaySound("rock.wav", false, 100);
                         meteor = false;
                         meteor_spawn_timer = 0;
                         metx = 550;
@@ -2684,7 +2748,9 @@ void checkBulletEnemyCollision()
                         bullet_x[i] = -100;
                         bullet_y[i] = -100;
                         iSetSpritePosition(&bullet_sprites[i], -100, -100);
-                        meteor2 = false;
+                       // meteor2 = false;
+                        iPlaySound("rock.wav", false, 100);
+                        meteor2 = false;  
                         meteor2_spawn_timer = 0;
                         met2x = 550;
                         met2y = -300;
@@ -2714,7 +2780,7 @@ void enemBulletCollision()
     }
 
     bool hit_this_frame = false;
-
+    if(gamestate==ARCADE){
     // Enemy 1 Bullets vs Spaceship
     for (int i = 0; i < MAX_BULLETS; i++)
     {
@@ -2734,13 +2800,14 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
         }
     }
 
@@ -2763,13 +2830,102 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
+        }
+    }
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (e6bullet_active[i] && iCheckCollision(&spaceship, &e6bulsprite[i]) && !shipexp)
+        {
+            printf("Enemy6 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e6bullet_x[i], e6bullet_y[i]);
+            e6bullet_active[i] = 0;
+            e6bullet_x[i] = -100;
+            e6bullet_y[i] = -100;
+            iSetSpritePosition(&e6bulsprite[i], -100, -100);
+
+            if (!shield_active)
+            {
+                health--;
+            }
+            else
+            {
+                shield_hp--;
+                if (shield_hp <= 0)
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
+                    shield_active = false;
+                    shield_hp = 3;
+                    iSetSpritePosition(&shieldsprt, -100, -100);
+                }
+            }
+            hit_this_frame = true;
+            break;
+        }
+    }
+   }else if(gamestate==ENDLESS){
+    // Enemy 1 Bullets vs Spaceship
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (ebullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp)
+        {
+            printf("Enemy1 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, ebullet_x[i], ebullet_y[i]);
+            ebullet_active[i] = 0;
+            ebullet_x[i] = -100;
+            ebullet_y[i] = -100;
+            iSetSpritePosition(&ebulsprite[i], -100, -100);
+
+            if (!shield_active)
+            {
+                health--;
+            }
+            else
+            {
+                shield_hp--;
+                if (shield_hp <= 0)
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
+                    shield_active = false;
+                    shield_hp = 3;
+                    iSetSpritePosition(&shieldsprt, -100, -100);
+                }
+            }
+            hit_this_frame = true;
+            break;
+        }
+    }
+
+    // Enemy 2 Bullets vs Spaceship
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (e2bullet_active[i] && iCheckCollision(&spaceship, &e2bulsprite[i]) && !shipexp)
+        {
+            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+            e2bullet_active[i] = 0;
+            e2bullet_x[i] = -100;
+            e2bullet_y[i] = -100;
+            iSetSpritePosition(&e2bulsprite[i], -100, -100);
+
+            if (!shield_active)
+            {
+                health--;
+            }
+            else
+            {
+                shield_hp--;
+                if (shield_hp <= 0)
+                {  iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
+                    shield_active = false;
+                    shield_hp = 3;
+                    iSetSpritePosition(&shieldsprt, -100, -100);
+                }
+            }
+            hit_this_frame = true;
+            break;
         }
     }
     // enemy3
@@ -2777,7 +2933,7 @@ void enemBulletCollision()
     {
         if (e3bullet_active[i] && iCheckCollision(&spaceship, &e3bulsprite[i]) && !shipexp)
         {
-            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+            printf("Enemy3 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e3bullet_active[i] = 0;
             e3bullet_x[i] = -100;
             e3bullet_y[i] = -100;
@@ -2791,13 +2947,14 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
         }
     }
     // enemy 4
@@ -2805,7 +2962,7 @@ void enemBulletCollision()
     {
         if (e4bullet_active[i] && iCheckCollision(&spaceship, &e4bulsprite[i]) && !shipexp)
         {
-            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+            printf("Enemy4 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e4bullet_active[i] = 0;
             e4bullet_x[i] = -100;
             e4bullet_y[i] = -100;
@@ -2819,13 +2976,14 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
         }
     }
     // enemy 5
@@ -2833,7 +2991,7 @@ void enemBulletCollision()
     {
         if (e5bullet_active[i] && iCheckCollision(&spaceship, &ebulsprite[i]) && !shipexp)
         {
-            printf("Enemy2 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
+            printf("Enemy5 bullet %d collision at spaceship (%d, %d), bullet (%d, %d)\n", i, move_lf, move_ud, e2bullet_x[i], e2bullet_y[i]);
             e5bullet_active[i] = 0;
             e5bullet_x[i] = -100;
             e5bullet_y[i] = -100;
@@ -2847,15 +3005,16 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
         }
-    }
+    }}else if(gamestate==BOSS){
     // Enemy 6 Bullets vs Spaceship
     for (int i = 0; i < MAX_BULLETS; i++)
     {
@@ -2875,15 +3034,17 @@ void enemBulletCollision()
             {
                 shield_hp--;
                 if (shield_hp <= 0)
-                {
+                {   iPlaySound("assets/sounds/shieldbreak.wav", false, 100);
                     shield_active = false;
                     shield_hp = 3;
                     iSetSpritePosition(&shieldsprt, -100, -100);
                 }
             }
             hit_this_frame = true;
+            break;
         }
     }
+}
 
     // Apply Invincibility and Check Health
     if (hit_this_frame)
@@ -2893,6 +3054,7 @@ void enemBulletCollision()
         {
             printf("Health <= 0, triggering explosion\n");
             shipexp = true;
+            iPlaySound("assets/sounds/shipexplosion.wav", false, 100);
             ship_state = EXP;
             exp_idx = 0;
             iChangeSpriteFrames(&spaceship, s_exp, 7);
@@ -2928,6 +3090,7 @@ void sound_manage()
     {
         iPauseSound(homeidx);
         mainidx = iPlaySound("assets/sounds/mainbg.wav", true, 70);
+        //rocket_countidx= iPlaySound("assets/sounds/rocket_count.wav", true, 70);
     }
 }
 
@@ -2936,23 +3099,50 @@ void mainpage1()
     // Background and Base UI
     if (gamestate == BOSS)
     {iShowLoadedImage(0, 0, &mainbg);
-    wrap = game_paused ? 0 : -2;
-    iWrapImage(&mainbg, wrap);}
-    else if (gamestate == ARCADE)
-    {iShowLoadedImage(0, 0, &abg);
-    wrap = game_paused ? 0 : -2;
-    iWrapImage(&abg, wrap);}
-    if (gamestate == BOSS)
-        enem6_active = true;
-
-    // Shield Display
+         // Shield Display
     if (shield_active)
     {
         iShowSprite(&shieldsprt);
     }
-
-    // Spaceship Display
+      // Spaceship Display
     iShowSprite(&spaceship);
+    if(pur==3){
+        iShowLoadedImage(400,200,&pur3);
+        iPlaySound("assets/sounds/321.wav", false, 70);
+    }else if(pur==2){
+        iShowLoadedImage(400,200,&pur2);
+    }else if(pur==1){
+        iShowLoadedImage(400,200,&pur1);
+    }else if(pur==0) { 
+        iShowLoadedImage(400,200,&purgo);
+    }else if(pur<0){
+    wrap = game_paused ? 0 : -2;
+    iWrapImage(&mainbg, wrap);}}
+    else if (gamestate == ARCADE)
+    {iShowLoadedImage(0, 0, &abg);
+         // Shield Display
+    if (shield_active)
+    {
+        iShowSprite(&shieldsprt);
+    }
+        // Spaceship Display
+    iShowSprite(&spaceship);
+    if(blu==3){
+        iShowLoadedImage(400,200,&blu3);
+        iPlaySound("assets/sounds/321.wav", false, 70);
+    }else if(blu==2){
+        iShowLoadedImage(400,200,&blu2);
+    }else if(blu==1){
+        iShowLoadedImage(400,200,&blu1);
+    }else if(blu==0) { 
+        iShowLoadedImage(400,200,&blugo);
+    }else if(blu<0){
+    wrap = game_paused ? 0 : -2;
+    iWrapImage(&abg, wrap);}}
+    if(blu<0 || pur<0){
+
+    if (gamestate == BOSS)
+        enem6_active = true;
 
     // Score Display
     iShowLoadedImage2(1060, 615, &score);
@@ -3053,10 +3243,12 @@ void mainpage1()
         int elapsed = current_time - rocket_powerup_start_time;
         int display_number = 9 - (elapsed / 1000);
         if (display_number >= 0 && display_number <= 9)
-        {
-            if (display_number == 9)
+        {   if(rocket_countidx!=-1){
+            iStopSound(rocket_countidx);
+        }
+            if (display_number == 9){
                 iShowLoadedImage(180, 630, &num9);
-            else if (display_number == 8)
+             } else if (display_number == 8)
                 iShowLoadedImage(180, 630, &num8);
             else if (display_number == 7)
                 iShowLoadedImage(180, 630, &num7);
@@ -3072,29 +3264,51 @@ void mainpage1()
                 iShowLoadedImage(180, 630, &num2);
             else if (display_number == 1)
                 iShowLoadedImage(180, 630, &num1);
-            else if (display_number == 0)
+            else if (display_number == 0){
                 iShowLoadedImage(180, 630, &num0);
+        }else
+        {
+            rocket_powerup_active = false;
+            if (rocket_countidx != -1)
+            {
+                iStopSound(rocket_countidx); // Stop sound when countdown ends
+                rocket_countidx = -1;
+            }
+        }
         }
     }
-
     just_reset = false;
+}
+    
 }
 
 void mainpage2()
 {
     // Background and Base UI
     iShowLoadedImage(0, 0, &mainbg2);
-    wrap = game_paused ? 0 : -2;
-    iWrapImage(&mainbg2, wrap);
-
-    // Shield Display
+     // Shield Display
     if (shield_active)
     {
         iShowSprite(&shieldsprt);
     }
-
     // Spaceship Display
     iShowSprite(&spaceship);
+    if(bla==3){
+        iShowLoadedImage(400,200,&bla3);
+        iPlaySound("assets/sounds/321.wav", false, 70);
+    }else if(bla==2){
+        iShowLoadedImage(400,200,&bla2);
+    }else if(bla==1){
+        iShowLoadedImage(400,200,&bla1);
+    }else if(bla==0) { 
+        iShowLoadedImage(400,200,&blago);
+    }else{
+    wrap = game_paused ? 0 : -2;
+    iWrapImage(&mainbg2, wrap);
+
+   
+
+    
 
     // Score Display
     iShowLoadedImage2(1060, 615, &score);
@@ -3208,9 +3422,10 @@ void mainpage2()
         int display_number = 9 - (elapsed / 1000);
         if (display_number >= 0 && display_number <= 9)
         {
-            if (display_number == 9)
+             
+            if (display_number == 9){
                 iShowLoadedImage(180, 630, &num9);
-            else if (display_number == 8)
+             } else if (display_number == 8)
                 iShowLoadedImage(180, 630, &num8);
             else if (display_number == 7)
                 iShowLoadedImage(180, 630, &num7);
@@ -3226,11 +3441,19 @@ void mainpage2()
                 iShowLoadedImage(180, 630, &num2);
             else if (display_number == 1)
                 iShowLoadedImage(180, 630, &num1);
-            else if (display_number == 0)
+            else if (display_number == 0){
                 iShowLoadedImage(180, 630, &num0);
+            }else {
+            // Countdown has ended (display_number < 0)
+            rocket_powerup_active = false;
+            if (rocket_countidx != -1) {
+                iStopSound(rocket_countidx); // Stop the sound
+                rocket_countidx = -1;        // Reset the sound index
+            }
+        }
         }
     }
-
+}
     just_reset = false;
 }
 
@@ -3343,7 +3566,7 @@ void iDraw() {
         for (int i = 0; i < bossCount && i < MAX_LEADERBOARD_ENTRIES; i++) {
             char scoreStr[20];
             sprintf(scoreStr, "%d", bossLeaderboard[i].score);
-            iShowText(235, 525 - i * 80, bossLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
+            iShowText(250, 525 - i * 80, bossLeaderboard[i].name, "assets/fonts/Orbitron-Medium.ttf", 35);
             iShowText(785, 525 - i * 80, scoreStr, "assets/fonts/Orbitron-Medium.ttf", 35);
         }
         break;
@@ -3372,32 +3595,36 @@ void iMouse(int button, int state, int mx, int my)
         switch (gamestate)
         {
         case HOME:
-            if ((424 <= mx && mx <= 773) && (354 <= my && my <= 416))
+            if ((424 <= mx && mx <= 773) && (354 <= my && my <= 416)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = MODE;
-            else if ((424 <= mx && mx <= 773) && (245 <= my && my <= 310))
+            }else if ((424 <= mx && mx <= 773) && (245 <= my && my <= 310)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = LEADERBOARD;
-            else if ((424 <= mx && mx <= 773) && (140 <= my && my <= 205))
+             } else if ((424 <= mx && mx <= 773) && (140 <= my && my <= 205)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = HELP;
-            else if ((424 <= mx && mx <= 773) && (35 <= my && my <= 100))
+              } else if ((424 <= mx && mx <= 773) && (35 <= my && my <= 100)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = ABOUT;
-
+              }
             break;
 
         case MODE:
 
             if ((424 <= mx && mx <= 775) && (355 <= my && my <= 415))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 prev_gamestate = ARCADE;
                 gamestate = NAME;
                 ;
             }
             else if ((424 <= mx && mx <= 775) && (225 <= my && my <= 285))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 prev_gamestate = BOSS;
                 gamestate = NAME;
             }
             else if ((424 <= mx && mx <= 775) && (95 <= my && my <= 155))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 prev_gamestate = ENDLESS;
                 gamestate = NAME;
             }
@@ -3406,37 +3633,39 @@ void iMouse(int button, int state, int mx, int my)
         case LEADERBOARD:
 
             if ((424 <= mx && mx <= 775) && (355 <= my && my <= 415))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = ARCADE_SCORE;
                 
             }
             else if ((424 <= mx && mx <= 775) && (225 <= my && my <= 285))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = BOSS_SCORE;
             }
             else if ((424 <= mx && mx <= 775) && (95 <= my && my <= 155))
-            {
+            {   iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = ENDLESS_SCORE;
             }
 
             break;
         case HELP:
             cout << mx << " " << my << endl;
-            if ((424 <= mx && mx <= 775) && (355 <= my && my <= 415))
-
+            if ((424 <= mx && mx <= 775) && (355 <= my && my <= 415)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = CONTROLS;
 
-            else if ((424 <= mx && mx <= 775) && (220 <= my && my <= 290))
+             } else if ((424 <= mx && mx <= 775) && (220 <= my && my <= 290)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
                 gamestate = SOUND;
-            else if ((424 <= mx && mx <= 775) && (95 <= my && my <= 155))
-                gamestate = QUIT;
+             }else if ((424 <= mx && mx <= 775) && (95 <= my && my <= 155)){
+                iPlaySound("assets/sounds/selection.wav", false, 100);
+                gamestate = QUIT;}
 
             break;
         case ARCADE:
             if (game_paused)
             {
                 if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     iResumeTimer(timer_id);
                     iResumeTimer(animation_timer_id);
@@ -3444,7 +3673,7 @@ void iMouse(int button, int state, int mx, int my)
                         iResumeSound(mainidx);
                 }
                 else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = ARCADE;
@@ -3454,7 +3683,7 @@ void iMouse(int button, int state, int mx, int my)
                     }
                 }
                 else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = HOME;
@@ -3470,7 +3699,7 @@ void iMouse(int button, int state, int mx, int my)
             if (game_paused)
             {
                 if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     iResumeTimer(timer_id);
                     iResumeTimer(animation_timer_id);
@@ -3478,7 +3707,7 @@ void iMouse(int button, int state, int mx, int my)
                         iResumeSound(mainidx);
                 }
                 else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = ENDLESS;
@@ -3488,7 +3717,7 @@ void iMouse(int button, int state, int mx, int my)
                     }
                 }
                 else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = HOME;
@@ -3504,7 +3733,7 @@ void iMouse(int button, int state, int mx, int my)
             if (game_paused)
             {
                 if ((522 <= mx && mx <= 704) && (372 <= my && my <= 403))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     iResumeTimer(timer_id);
                     iResumeTimer(animation_timer_id);
@@ -3512,7 +3741,7 @@ void iMouse(int button, int state, int mx, int my)
                         iResumeSound(mainidx);
                 }
                 else if ((511 <= mx && mx <= 719) && (273 <= my && my <= 303))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = BOSS;
@@ -3522,7 +3751,7 @@ void iMouse(int button, int state, int mx, int my)
                     }
                 }
                 else if ((476 <= mx && mx <= 746) && (172 <= my && my <= 203))
-                {
+                {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                     game_paused = false;
                     resetGame();
                     gamestate = HOME;
@@ -3534,9 +3763,9 @@ void iMouse(int button, int state, int mx, int my)
                 }
             }
             break;
-        case GAMEOVER:
-            if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298))
-            {
+                case GAMEOVER:
+                if ((344 <= mx && mx <= 541) && (246 <= my && my <= 298))
+            {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                 game_paused = false;
                 resetGame();
                 gamestate = prev_gamestate;
@@ -3545,8 +3774,9 @@ void iMouse(int button, int state, int mx, int my)
                     iResumeSound(mainidx);
                 }
             }
+         
             if ((601 <= mx && mx <= 806) && (241 <= my && my <= 294))
-            {
+            {   iPlaySound("assets/sounds/ingameselection.wav", false, 100);
                 game_paused = false;
                 resetGame();
                 gamestate = HOME;
@@ -3617,7 +3847,7 @@ void iKeyPress(unsigned char key)
             if (rocket_powerup_active)
             {
                 if (rocket_powerup_count >= 2)
-                {
+                {   
                     // Spread pattern for second power-up
                     int num_bullets = 5;
                     double angles[5] = {-15.0, -7.5, 0.0, 7.5, 15.0};
@@ -3726,7 +3956,8 @@ void iKeyRelease(unsigned char key)
     case 'm':
         if (sound_check == 0)
         {
-            if (gamestate == HOME || gamestate == MODE)
+            if (gamestate == HOME || gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD)
+            
             {
                 iPauseSound(homeidx);
                 sound_check++;
@@ -3739,7 +3970,8 @@ void iKeyRelease(unsigned char key)
         }
         else
         {
-            if (gamestate == HOME || gamestate == MODE)
+            if (gamestate == HOME || gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD)
+            
             {
                 iResumeSound(homeidx);
                 sound_check = 0;
@@ -3753,7 +3985,7 @@ void iKeyRelease(unsigned char key)
         break;
     case 27: // ESC key
         if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
-        {
+        { 
             game_paused = true;
             iPauseTimer(timer_id);
             iPauseTimer(animation_timer_id);
@@ -3762,12 +3994,15 @@ void iKeyRelease(unsigned char key)
                 iPauseSound(mainidx);
             }
         }
-        if (gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD)
-            gamestate = HOME;
-        if (gamestate == CONTROLS || gamestate == SOUND || gamestate == QUIT)
-            gamestate = HELP;
-        if (gamestate == ARCADE_SCORE || gamestate == BOSS_SCORE || gamestate == ENDLESS_SCORE)
-            gamestate = LEADERBOARD;
+        if (gamestate == MODE || gamestate == HELP || gamestate == ABOUT || gamestate == LEADERBOARD){
+            iPlaySound("assets/sounds/selection.wav", false, 100);
+            gamestate = HOME;}
+        if (gamestate == CONTROLS || gamestate == SOUND || gamestate == QUIT){
+            iPlaySound("assets/sounds/selection.wav", false, 100);
+            gamestate = HELP;}
+        if (gamestate == ARCADE_SCORE || gamestate == BOSS_SCORE || gamestate == ENDLESS_SCORE){
+            iPlaySound("assets/sounds/selection.wav", false, 100);
+            gamestate = LEADERBOARD;}
         break;
     }
 }
@@ -3800,7 +4035,22 @@ void timer()
 {
     if (game_paused)
         return;
-
+        if(gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS){
+    countertimer+=50;}
+    if(countertimer>=1000){
+        if(gamestate == ARCADE){
+            blu--;
+            countertimer = 0;
+        }else if(gamestate == BOSS){
+            pur--;
+            countertimer = 0;
+        }else if(gamestate == ENDLESS){
+            bla--;
+            countertimer = 0;
+        }
+    }
+    if(bla<0 || blu<0 || pur<0){
+    
     // Update Game Components
     moveBullets();
     moveSpaceship();
@@ -3809,28 +4059,9 @@ void timer()
     updateEnemyExplosion();
     updatemeteor();
 
-    // Manage Reset Timer
-    if (just_reset && just_reset_timer > 0)
-    {
-        just_reset_timer -= 50;
-        if (just_reset_timer <= 0)
-        {
-            just_reset = false;
-        }
-    }
+    
 
-    // Game Over Screen Animation
-    if (gamestate == GAMEOVER)
-    {
-        gocount = (gocount + 1) % 8;
-        scorecolourtimer += 50;
-        if (scorecolourtimer >= 1000)
-        {
-            scorecolour = (scorecolour + 1) % 3;
-            scorecolourtimer = 0;
-        }
-    }
-
+    
     // Survival Score Timer (1 point per ~1.4 seconds)
     if (gamestate == ARCADE || gamestate == ENDLESS || gamestate == BOSS)
     {
@@ -3843,6 +4074,27 @@ void timer()
             survival_score_timer = 0;
         }
     }
+}
+    if (just_reset && just_reset_timer > 0)
+    {
+        just_reset_timer -= 50;
+        if (just_reset_timer <= 0)
+        {
+            just_reset = false;
+        }
+    }
+    // Game Over Screen Animation
+    if (gamestate == GAMEOVER)
+    {
+        gocount = (gocount + 1) % 8;
+        scorecolourtimer += 50;
+        if (scorecolourtimer >= 1000)
+        {
+            scorecolour = (scorecolour + 1) % 3;
+            scorecolourtimer = 0;
+        }
+    }
+
 }
 
 //=============================================================================
