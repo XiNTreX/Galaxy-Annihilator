@@ -30,7 +30,6 @@ Run the game using the following command in the terminal or openning the runner.
 ```
 
 ---
----
 🎮 Gameplay 
 ---
 
