@@ -43,5 +43,5 @@ Navigate through the help menu to learn all the controls and jump into the game 
 
 **Under the Supervision of**
 
-[Anwarul Bashar Shuaib Sir](https://github.com/shuaibw)
+[Anwarul Bashir Shuaib sir](https://github.com/shuaibw)
 ---
