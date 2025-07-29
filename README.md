@@ -19,8 +19,10 @@ Galaxy-Annihilator is a 2D space-shooter game made using C with the help of [iGr
 
 ⚙️ Setup Guide
 ---
+Download the ZIP file  from [here](https://drive.google.com/file/d/1Dq4rnNkAR-5CaEQe8JmtmPsrw4M_ZsCP/view) and run the Galaxy-Annihilator.exe file to play.
 
-Clone the repository or download the ZIP file from [here](https://github.com/XiNTreX/Galaxy-Annihilator/archive/refs/heads/main.zip)
+**For Developers**
+Clone the repository or download the ZIP file from [here](https://github.com/XiNTreX/Galaxy-Annihilator/archive/refs/heads/main.zip).
 ```bash
 git clone https://github.com/XiNTreX/Galaxy-Annihilator.git
 ```
