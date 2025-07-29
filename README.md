@@ -68,6 +68,6 @@ https://github.com/user-attachments/assets/e6f62fc8-28c1-4515-807d-05346e5b60a5
 
 **Under the Supervision of**
 
-[Anwarul Bashir Shuaib sir](https://github.com/shuaibw)
+[Anwarul Bashir Shuaib](https://github.com/shuaibw) sir
 
 ---
