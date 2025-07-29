@@ -38,6 +38,26 @@ Run the game using the following command in the terminal or openning the runner.
 
 Navigate through the help menu to learn all the controls and jump into the game which can be played in three different modes!
 
+**ARCADE**
+
+https://github.com/user-attachments/assets/b51a85fc-ed02-4de4-a2a9-b4f0166f704b
+
+
+
+**BOSS**
+
+https://github.com/user-attachments/assets/519257ea-ac46-45a1-ad44-04887e9b3bf4
+
+
+
+
+
+**ENDLESS**
+
+https://github.com/user-attachments/assets/e6f62fc8-28c1-4515-807d-05346e5b60a5
+
+
+
 ---
 
 **Developed by**
