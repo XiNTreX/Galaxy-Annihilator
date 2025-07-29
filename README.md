@@ -17,7 +17,8 @@ Galaxy-Annihilator is a 2D space-shooter game made using C with the help of [iGr
 
 ---
 
-##Setup Guide
+⚙️ Setup Guide
+---
 
 Clone the repository or download the ZIP file from [here](https://github.com/XiNTreX/Galaxy-Annihilator/archive/refs/heads/main.zip)
 ```bash
@@ -30,9 +31,11 @@ Run the game using the following command in the terminal or openning the runner.
 
 ---
 ---
-##Gameplay 
+🎮 Gameplay 
+---
 
 Navigate through the help menu to learn all the controls and jump into the game which can be played in three different modes!
+
 ---
 
 **Developed by**
@@ -44,4 +47,5 @@ Navigate through the help menu to learn all the controls and jump into the game 
 **Under the Supervision of**
 
 [Anwarul Bashir Shuaib sir](https://github.com/shuaibw)
+
 ---
