@@ -5,7 +5,7 @@
 
 
 ---
-Galaxy-Annihilator is a 2D space-shooter game made using C with the help of [iGraphics.h](https://github.com/mahirlabibdihan/Modern-iGraphics/blob/main/iGraphics.h) library. It was the project for Level-1, Term-1 of CSE-102 course.
+Galaxy-Annihilator is a 2D space-shooter game developed using C with the help of [iGraphics.h](https://github.com/mahirlabibdihan/Modern-iGraphics/blob/main/iGraphics.h) library. It was the project for Level-1, Term-1 of CSE-102 course.
 
 ---
 
