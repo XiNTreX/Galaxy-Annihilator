@@ -60,13 +60,15 @@ https://github.com/user-attachments/assets/e6f62fc8-28c1-4515-807d-05346e5b60a5
 
 ---
 
-**Developed by**
+🛠️Developed by
+---
 
 [Priom Hazra Raj](https://github.com/XiNTreX)
 
 [Rupom Sinan Supto](https://github.com/Hermit0007)
 
-**Under the Supervision of**
+Under the Supervision of
+---
 
 [Anwarul Bashir Shuaib](https://github.com/shuaibw) sir
 
